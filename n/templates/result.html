@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Result - Product Query App{% endblock %}
+
+{% block content %}
+<section>
+    <h2>Query Result</h2>
+    <p><strong>Your Query:</strong> {{ query }}</p>
+    <h3>Suggested Products</h3>
+    {% if products and products|length > 0 %}
+        <div class="products-grid">
+            {% for product in products %}
+                <div class="product-item">
+                    <h4>{{ product['name'] }}</h4>
+                    <p>{{ product['description'] }}</p>
+                    <p>Price: ${{ product['price'] }}</p>
+                    <p>Category: {{ product['category'] }}</p>
+                    {% if product.image %}
+                        <img src="{{ url_for('static', filename='uploads/' + product['image']) }}" alt="{{ product['name'] }}" style="max-width: 150px;">
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No products found matching your query.</p>
+    {% endif %}
+    <a href="{{ url_for('index') }}">Go back to Home</a>
+</section>
+{% endblock %}

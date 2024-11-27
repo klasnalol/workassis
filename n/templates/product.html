@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+
+{% block title %}Product List - Product Query App{% endblock %}
+
+{% block content %}
+<section>
+    <h2>Products Matching Your Query</h2>
+    <p>Your query: <strong>{{ query }}</strong></p>
+    <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Image</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product['id'] }}</td>
+                <td>{{ product['name'] }}</td>
+                <td>{{ product['description'] }}</td>
+                <td>${{ product['price'] }}</td>
+                <td>
+                    <img src="{{ url_for('static', filename='uploads/' + product['image']) }}" alt="{{ product['name'] }}" style="max-width: 100px;">
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="{{ url_for('index') }}">Go Back</a>
+</section>
+{% endblock %}

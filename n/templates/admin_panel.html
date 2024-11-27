@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block title %}Admin Panel - Product Query App{% endblock %}
+
+{% block content %}
+<section>
+    <h2>Admin Panel</h2>
+    <a href="{{ url_for('add_product') }}">Add a New Product</a><br><br>
+    <form method="POST" action="{{ url_for('admin_panel') }}">
+        <input type="text" name="search" placeholder="Search products by name, description, or price..." value="{{ search_query }}">
+        <button type="submit">Search</button>
+    </form>
+    <br>
+    <table border="1" style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Price</th>
+                <th>Image</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for product in products %}
+            <tr>
+                <td>{{ product['id'] }}</td>
+                <td><input type="text" value="{{ product['name'] }}" name="name_{{ product['id'] }}" id="name_{{ product['id'] }}"></td>
+                <td><textarea name="description_{{ product['id'] }}" id="description_{{ product['id'] }}">{{ product['description'] }}</textarea></td>
+                <td><input type="text" value="{{ product['price'] }}" name="price_{{ product['id'] }}" id="price_{{ product['id'] }}"></td>
+                <td>
+                    <img src="{{ url_for('static', filename='uploads/' + product['image']) }}" alt="{{ product['name'] }}" style="max-width: 100px;">
+                </td>
+                <td>
+                    <button onclick="saveProduct({{ product['id'] }})">Save</button>
+                    <button onclick="deleteProduct({{ product['id'] }})">Delete</button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</section>
+
+<script>
+    function saveProduct(productId) {
+        const name = document.getElementById(`name_${productId}`).value;
+        const description = document.getElementById(`description_${productId}`).value;
+        const price = document.getElementById(`price_${productId}`).value;
+
+        fetch(`/save_product/${productId}`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name, description, price }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Product saved successfully!');
+            } else {
+                alert('Failed to save product: ' + data.error);
+            }
+        })
+        .catch((error) => {
+            console.error('Error:', error);
+            alert('An error occurred while saving the product.');
+        });
+    }
+
+    function deleteProduct(productId) {
+        if (confirm('Are you sure you want to delete this product?')) {
+            fetch(`/delete_product/${productId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert('Product deleted successfully!');
+                    location.reload();
+                } else {
+                    alert('Failed to delete product: ' + data.error);
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                alert('An error occurred while deleting the product.');
+            });
+        }
+    }
+</script>
+{% endblock %}

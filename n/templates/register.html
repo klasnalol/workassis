@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}Register - Product Query App{% endblock %}
+
+{% block content %}
+<section>
+    <a href="{{ url_for('index') }}">Main Page</a>
+    <h2>Register</h2>
+    <form action="{{ url_for('register') }}" method="post">
+        <label>Username:</label>
+        <input type="text" name="username" required><br><br>
+        <label>Password:</label>
+        <input type="password" name="password" required>
+        <br>
+        <button type="submit">Register</button>
+    </form>
+</section>
+{% endblock %}
