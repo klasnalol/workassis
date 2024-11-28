@@ -4,7 +4,6 @@
 
 {% block content %}
 
-
 <section>
     <h2>Admin Panel</h2>
     {% if 'user_id' in session and session['role'] == 'admin' %}
@@ -38,9 +37,10 @@
         <h2>Search Products</h2>
         <form id="search-form" action="/search" method="get">
             <input type="text" id="query-input" name="query" placeholder="Search products..." required>
-            <button type="button" id="keyboard-btn" onclick="showKeyboard()">Open Keyboard</button>
-            <div id="keyboard-container" class="onscreen-keyboard">
-                <button id="close-keyboard" onclick="closeKeyboard()">X</button>
+            <button type="button" id="keyboard-btn">Open Keyboard</button>
+            <div id="keyboard-container" class="onscreen-keyboard" style="display: none;">
+                <!-- Move 'X' button to the left -->
+                <button id="close-keyboard" onclick="closeKeyboard()" style="float: left;">X</button>
                 <div id="keyboard">
                     <!-- Keys will be dynamically generated -->
                 </div>
@@ -65,12 +65,27 @@
 <section id="product-list">
     <h2>Product List</h2>
     <div id="products-container" class="products-grid">
-        <!-- Products will load here dynamically -->
+        {% for product in products %}
+            <div class="product-item">
+                <div class="product-image">
+                    <img src="{{ product.image_url }}" alt="{{ product.name }}" />
+                </div>
+                <button class="details-toggle" onclick="toggleDetails(this)">More Info</button>
+                <div class="product-details" style="display: none;">
+                    <h3>{{ product.name }}</h3>
+                    <p>{{ product.description }}</p>
+                    <p>Price: ${{ product.price }}</p>
+                    <p>Category: {{ product.category }}</p>
+                </div>
+            </div>
+        {% else %}
+            <p>No products available.</p>
+        {% endfor %}
     </div>
 </section>
 
 <script>
-    let page = 1;
+    let page = 2; // Start from page 2 since page 1 is already loaded
     let isLoading = false;
     let isUppercase = false;
 
@@ -104,6 +119,7 @@
                         <h3>${product.name}</h3>
                         <p>${product.description}</p>
                         <p>Price: $${product.price}</p>
+                        <p>Category: ${product.category}</p>
                     </div>
                 `;
                 container.appendChild(productDiv);
@@ -144,8 +160,10 @@
 
             row.forEach(char => {
                 const key = document.createElement('button');
-                key.textContent = char === 'Space' ? '' : char;
+                key.type = 'button'; // Prevent form submission
+                key.textContent = char === 'Space' ? 'Space' : char;
                 key.className = `keyboard-key ${['⌫', '⇧', 'Space', 'Enter'].includes(char) ? 'special-key' : ''}`;
+
                 if (char === '⌫') {
                     key.onclick = () => {
                         inputField.value = inputField.value.slice(0, -1); // Backspace
@@ -165,7 +183,7 @@
                     };
                 } else {
                     key.onclick = () => {
-                        inputField.value += isUppercase ? char.toUpperCase() : char; // Add character
+                        inputField.value += isUppercase ? char.toUpperCase() : char.toLowerCase(); // Add character
                     };
                 }
                 rowDiv.appendChild(key);
@@ -195,4 +213,5 @@
         }
     });
 </script>
+
 {% endblock %}

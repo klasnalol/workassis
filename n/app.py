@@ -74,7 +74,35 @@ def record_voice(duration=10, filename="voice_input.wav"):
 # Home route
 @app.route('/')
 def index():
-    return render_template('index.html')
+    page = 1
+    items_per_page = 10
+    offset = (page - 1) * items_per_page
+
+    conn = get_db_connection()
+    conn.row_factory = sqlite3.Row  # Allows accessing columns by name
+    cursor = conn.cursor()
+    cursor.execute("""
+        SELECT id, name, description, price, image, category
+        FROM products
+        LIMIT ? OFFSET ?
+    """, (items_per_page, offset))
+    products = cursor.fetchall()
+    conn.close()
+
+    # Prepare the products list with image URLs
+    products_list = []
+    for product in products:
+        image_url = f"/static/uploads/{product['image']}" if product['image'] else "/static/images/default.png"
+        products_list.append({
+            "id": product["id"],
+            "name": product["name"],
+            "description": product["description"],
+            "price": product["price"],
+            "category": product["category"],
+            "image_url": image_url,
+        })
+
+    return render_template('index.html', products=products_list)
 
 # Voice input route
 @app.route('/voice_input', methods=['POST'])
@@ -452,6 +480,7 @@ def process_voice_input():
         return jsonify({'user_message': user_message, 'bot_message': bot_message})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
 # Start Flask app
 if __name__ == '__main__':
     socketio.run(app, host='0.0.0.0', port=5000, debug=True)
