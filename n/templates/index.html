@@ -3,15 +3,7 @@
 {% block title %}Home - Product Query App{% endblock %}
 
 {% block content %}
-<section>
-    <h2>User Access</h2>
-    {% if 'user_id' not in session %}
-        <a href="{{ url_for('login') }}">Login</a> | <a href="{{ url_for('register') }}">Register</a>
-    {% else %}
-        <p>Welcome, {{ session['username'] }}!</p>
-        <a href="{{ url_for('logout') }}">Logout</a>
-    {% endif %}
-</section>
+
 
 <section>
     <h2>Admin Panel</h2>

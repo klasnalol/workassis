@@ -1,3 +1,5 @@
+import eventlet
+eventlet.monkey_patch()
 import os
 import sqlite3
 import sounddevice as sd
@@ -6,12 +8,18 @@ from flask import Flask, request, render_template, redirect, url_for, flash, ses
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from openai import OpenAI
+from flask_socketio import SocketIO, emit
+from datetime import datetime
+
 
 # Initialize Flask app
 app = Flask(__name__)
 app.config['UPLOAD_FOLDER'] = 'uploads'
 app.secret_key = 'supersecretkey'  # Needed for flash messages
 os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+
+# Initialize SocketIO for real-time updates
+socketio = SocketIO(app, async_mode='eventlet')
 
 # OpenAI client setup
 client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
@@ -371,6 +379,79 @@ def load_more_products():
 
     return jsonify(products_json)
 
+
+# Chat route with history
+@app.route('/chat', methods=['GET'])
+def chat():
+    # Initialize chat history if not present
+    if 'chat_history' not in session:
+        session['chat_history'] = []
+    return render_template('chat.html', chat_history=session['chat_history'])
+
+# Real-time chat communication via text
+@socketio.on('send_text_message')
+def handle_text_message(data):
+    try:
+        user_message = data.get('message', '')
+        if not user_message:
+            return
+
+        # Save user message to chat history
+        timestamp = datetime.now().strftime('%H:%M:%S')
+        session['chat_history'].append({'role': 'user', 'content': user_message, 'timestamp': timestamp})
+        session.modified = True  # Mark session as modified to save changes
+
+        # Emit user message to client immediately
+        emit('receive_message', {'role': 'user', 'content': user_message, 'timestamp': timestamp}, broadcast=True)
+
+        # Pass user message to GPT
+        response = client.chat.completions.create(
+            messages=[{'role': 'user', 'content': user_message}],
+            model='gpt-4o'
+        )
+        bot_message = response.choices[0].message.content
+
+        # Save bot response to chat history
+        session['chat_history'].append({'role': 'bot', 'content': bot_message, 'timestamp': timestamp})
+        session.modified = True  # Mark session as modified to save changes
+
+        # Emit bot response back to the client
+        emit('receive_message', {'role': 'bot', 'content': bot_message, 'timestamp': timestamp}, broadcast=True)
+    except Exception as e:
+        emit('receive_message', {'role': 'error', 'content': f'Error: {str(e)}'}, broadcast=True)
+
+
+# Handle voice input
+@app.route('/voice_input', methods=['POST'])
+def process_voice_input():
+    try:
+        # Record voice for 5 seconds
+        voice_file = record_voice(duration=5, filename="voice_input.wav")
+
+        # Transcribe using Whisper
+        with open(voice_file, "rb") as audio_file:
+            transcription = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file
+            )
+            user_message = transcription['text']
+
+        # Pass transcription to GPT
+        response = client.chat.completions.create(
+            messages=[{'role': 'user', 'content': user_message}],
+            model='gpt-4o'
+        )
+        bot_message = response['choices'][0]['message']['content']
+
+        # Add the messages to chat history
+        timestamp = datetime.now().strftime('%H:%M:%S')
+        session['chat_history'].append({'role': 'user', 'content': user_message, 'timestamp': timestamp})
+        session['chat_history'].append({'role': 'bot', 'content': bot_message, 'timestamp': timestamp})
+        session.modified = True  # Mark session as modified to save changes
+
+        return jsonify({'user_message': user_message, 'bot_message': bot_message})
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 # Start Flask app
 if __name__ == '__main__':
-    app.run(debug=True)
+    socketio.run(app, host='0.0.0.0', port=5000, debug=True)

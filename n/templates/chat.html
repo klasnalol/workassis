@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block title %}Chat{% endblock %}
+
+{% block content %}
+<div class="card mt-4">
+    <div class="card-header bg-primary text-white">
+        <h5>ChatGPT</h5>
+    </div>
+    <div class="card-body">
+        <div id="chat-box" class="mb-3" style="height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 5px;">
+            {% for message in chat_history %}
+                <div class="d-flex {{ 'justify-content-end' if message.role == 'user' else 'justify-content-start' }}">
+                    <div class="chat-bubble p-2 mb-2 {{ 'bg-primary text-white' if message.role == 'user' else 'bg-light text-dark' }}" style="border-radius: 10px; max-width: 70%;">
+                        <small><strong>{{ message.role | capitalize }}</strong></small><br>
+                        <p>{{ message.content }}</p>
+                        <small class="text-muted">{{ message.timestamp }}</small>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="input-group mb-3">
+            <textarea id="user-input" class="form-control" placeholder="Type your message..."></textarea>
+            <button id="send-text-btn" class="btn btn-primary">Send</button>
+        </div>
+        <div class="input-group">
+            <button id="record-voice-btn" class="btn btn-secondary">Record Voice</button>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    const socket = io();
+
+    // Send text message to the server
+    $('#send-text-btn').click(() => {
+        const userMessage = $('#user-input').val().trim();
+        if (userMessage) {
+            $('#user-input').val('');
+            socket.emit('send_text_message', { message: userMessage });
+        }
+    });
+
+    // Handle receiving a message from the server
+    socket.on('receive_message', (data) => {
+        appendMessageToChatBox(data.role, data.content, data.timestamp);
+    });
+
+    // Append messages to the chat box
+    function appendMessageToChatBox(role, content, timestamp) {
+        const chatBox = $('#chat-box');
+        const chatBubble = `
+            <div class="d-flex ${role === 'user' ? 'justify-content-end' : 'justify-content-start'}">
+                <div class="chat-bubble p-2 mb-2 ${role === 'user' ? 'bg-primary text-white' : 'bg-light text-dark'}" style="border-radius: 10px; max-width: 70%;">
+                    <small><strong>${role}</strong></small><br>
+                    <p>${content}</p>
+                    <small class="text-muted">${timestamp}</small>
+                </div>
+            </div>`;
+        chatBox.append(chatBubble);
+        chatBox.scrollTop(chatBox[0].scrollHeight); // Auto-scroll to the bottom
+    }
+
+    // Record voice and send to server
+    $('#record-voice-btn').click(() => {
+        $.ajax({
+            url: '/voice_input',
+            type: 'POST',
+            processData: false,
+            contentType: false,
+            success: function(response) {
+                if (response.error) {
+                    alert('Error: ' + response.error);
+                } else {
+                    const userMessage = response.user_message;
+                    const botMessage = response.bot_message;
+
+                    // Append user message
+                    const timestamp = new Date().toLocaleTimeString();
+                    appendMessageToChatBox('user', userMessage, timestamp);
+
+                    // Append bot response
+                    appendMessageToChatBox('bot', botMessage, timestamp);
+                }
+            },
+            error: function(err) {
+                alert('Error recording voice.');
+            }
+        });
+    });
+
+    // Handle pressing Enter to send message
+    $('#user-input').keypress((e) => {
+        if (e.which === 13 && !e.shiftKey) {
+            e.preventDefault();
+            $('#send-text-btn').click();
+        }
+    });
+</script>
+{% endblock %}
