@@ -39,8 +39,8 @@
             <input type="text" id="query-input" name="query" placeholder="Search products..." required>
             <button type="button" id="keyboard-btn">Open Keyboard</button>
             <div id="keyboard-container" class="onscreen-keyboard" style="display: none;">
-                <!-- Move 'X' button to the left -->
-                <button id="close-keyboard" onclick="closeKeyboard()" style="float: left;">X</button>
+                <!-- Remove inline style from the button -->
+                <button type="button" id="close-keyboard" onclick="closeKeyboard()">X</button>
                 <div id="keyboard">
                     <!-- Keys will be dynamically generated -->
                 </div>
