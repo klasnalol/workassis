@@ -53,7 +53,7 @@ def ensure_table_exists():
 ensure_table_exists()
 
 # Voice recording function
-def record_voice(duration=10, filename="voice_input.wav"):
+def record_voice(duration=5, filename="voice_input.wav"):
     """Record audio for a given duration and save to a file."""
     fs = 44100  # Sample rate
     print("Recording...")
@@ -92,7 +92,7 @@ def voice_input():
             messages=[{"role": "user", "content": text_query}],
             model="gpt-4o"
         )
-        response_text = response['choices'][0]['message']['content']
+        response_text = response.choices[0].message.content
 
         return render_template('result.html', query=text_query, response=response_text)
     except Exception as e:
@@ -340,6 +340,69 @@ def search_products():
     # Pass query to the template for display
     return render_template('result.html', query=query, products=products)
 
+
+# Text-to-speech function to generate audio in the selected language
+def text_to_speech(response_text, output_file="response_audio.wav", language="en"):
+    """Generate audio from GPT response using OpenAI Text-to-Speech."""
+    # Modify the text to instruct the TTS model about the language, if necessary
+    language_voice_map = {
+        'en': 'alloy',
+        'ru': 'maksim',
+        'kz': 'maksim'  # You might need a specific Kazakh TTS model if supported
+    }
+
+    voice = language_voice_map.get(language, 'alloy')
+
+    with client.audio.speech.with_streaming_response.create(
+            model="tts-1",
+            voice=voice,
+            input=response_text
+    ) as response:
+        response.stream_to_file(output_file)
+
+    return output_file
+
+
+# Route for getting more information about a specific product
+@app.route('/get_more_info/<int:product_id>', methods=['GET'])
+def get_more_info(product_id):
+    try:
+        selected_language = request.args.get('language', 'kz')
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        cursor.execute("SELECT name FROM products WHERE id = ?", (product_id,))
+        product = cursor.fetchone()
+        conn.close()
+
+        if product:
+            # Generate additional information using GPT based on the selected language
+            if selected_language == 'kz':
+                prompt = f"Осы өнім туралы айтып беріңіз, 20-30 сөзден аспайды: {product['name']}"
+            elif selected_language == 'ru':
+                prompt = f"Расскажите об этом продукте, не более 20-30 слов: {product['name']}"
+            else:  # Default to English
+                prompt = f"Tell me about this product in 20-30 words: {product['name']}"
+
+            # Generate additional information using GPT
+            response = client.chat.completions.create(
+                messages=[{"role": "user", "content": prompt}],
+                model="gpt-4o",
+                temperature=0
+            )
+            response_text = response.choices[0].message.content
+
+            # Generate audio from the response text in the selected language
+            output_file = f"static/uploads/product_{product_id}_info_{selected_language}.wav"
+            text_to_speech(response_text, output_file=output_file, language=selected_language)
+
+            return jsonify({
+                "additional_info": response_text,
+                "audio_url": url_for('static', filename=f'uploads/product_{product_id}_info_{selected_language}.wav')
+            })
+        else:
+            return jsonify({"error": "Product not found"}), 404
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 # Route for loading more products dynamically
 @app.route('/load_more_products', methods=['GET'])

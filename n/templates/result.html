@@ -11,13 +11,18 @@
         <div class="products-grid">
             {% for product in products %}
                 <div class="product-item">
+                    <div class="product-image">
+                        {% if product.image %}
+                            <img src="{{ url_for('static', filename='uploads/' + product['image']) }}" alt="{{ product['name'] }}" style="max-width: 150px;">
+                        {% endif %}
+                    </div>
                     <h4>{{ product['name'] }}</h4>
-                    <p>{{ product['description'] }}</p>
                     <p>Price: ${{ product['price'] }}</p>
                     <p>Category: {{ product['category'] }}</p>
-                    {% if product.image %}
-                        <img src="{{ url_for('static', filename='uploads/' + product['image']) }}" alt="{{ product['name'] }}" style="max-width: 150px;">
-                    {% endif %}
+                    <button class="details-toggle" data-product-id="{{ product['id'] }}">More Info</button>
+                    <div id="product-details-{{ product['id'] }}" class="product-details" style="display: none;">
+                        <p id="additional-info-{{ product['id'] }}">No additional information available</p>
+                    </div>
                 </div>
             {% endfor %}
         </div>
@@ -26,4 +31,47 @@
     {% endif %}
     <a href="{{ url_for('index') }}">Go back to Home</a>
 </section>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Event listener for the "More Info" button
+        document.querySelectorAll('.details-toggle').forEach(button => {
+            button.addEventListener('click', async (event) => {
+                const productId = event.target.getAttribute('data-product-id');
+                const selectedLanguage = document.getElementById('language') ? document.getElementById('language').value : 'en';
+
+                // Toggle visibility
+                const detailsDiv = document.getElementById(`product-details-${productId}`);
+                if (detailsDiv.style.display === 'none' || !detailsDiv.style.display) {
+                    try {
+                        // Send the request to get more information, including the selected language
+                        const response = await fetch(`/get_more_info/${productId}?language=${selectedLanguage}`);
+                        if (!response.ok) {
+                            throw new Error('Failed to fetch additional information.');
+                        }
+                        const data = await response.json();
+
+                        if (data.additional_info) {
+                            const infoParagraph = document.getElementById(`additional-info-${productId}`);
+                            infoParagraph.textContent = data.additional_info;
+
+                            // Play the generated audio if available
+                            if (data.audio_url) {
+                                const audio = new Audio(data.audio_url);
+                                audio.play();
+                            }
+                        }
+
+                        detailsDiv.style.display = 'block'; // Show the details div
+                    } catch (error) {
+                        console.error('Error fetching product information:', error);
+                    }
+                } else {
+                    detailsDiv.style.display = 'none'; // Hide the details div if already visible
+                }
+            });
+        });
+    });
+</script>
+
 {% endblock %}
