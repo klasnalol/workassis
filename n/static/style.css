@@ -236,7 +236,8 @@ form button:hover {
 #close-keyboard {
     position: absolute;
     top: 10px;
-    left: 350px;
+    left: 75%;
+    width: 20px;
     background: none;
     color: #fff;
     font-size: 1.5rem;

@@ -36,7 +36,7 @@
     <div class="search-query">
         <h2>Search Products</h2>
         <form id="search-form" action="/search" method="get">
-            <input type="text" id="query-input" name="query" placeholder="Search products..." required>
+            <label for="query-input"></label><input type="text" id="query-input" name="query" placeholder="Search products..." required>
             <button type="button" id="keyboard-btn">Open Keyboard</button>
             <div id="keyboard-container" class="onscreen-keyboard" style="display: none;">
                 <!-- Remove inline style from the button -->
@@ -45,18 +45,22 @@
                     <!-- Keys will be dynamically generated -->
                 </div>
             </div>
-            <select name="category">
-                <option value="">All Categories</option>
-                <option value="electronics">Electronics</option>
-                <option value="fashion">Fashion</option>
-                <option value="home">Home</option>
-            </select>
-            <select name="price_range">
-                <option value="">All Prices</option>
-                <option value="low">Under $50</option>
-                <option value="medium">$50 - $200</option>
-                <option value="high">Above $200</option>
-            </select>
+            <label>
+                <select name="category">
+                    <option value="">All Categories</option>
+                    <option value="electronics">Electronics</option>
+                    <option value="fashion">Fashion</option>
+                    <option value="home">Home</option>
+                </select>
+            </label>
+            <label>
+                <select name="price_range">
+                    <option value="">All Prices</option>
+                    <option value="low">Under $50</option>
+                    <option value="medium">$50 - $200</option>
+                    <option value="high">Above $200</option>
+                </select>
+            </label>
             <button type="submit" id="submit-search">Search</button>
         </form>
     </div>
@@ -85,6 +89,42 @@
 </section>
 
 <script>
+    // Event listener to save selected language
+    document.getElementById('language').addEventListener('change', function () {
+        const selectedLanguage = this.value;
+        // Store the selected language in localStorage
+        localStorage.setItem('selectedLanguage', selectedLanguage);
+    });
+
+    // On page load, set the dropdown to the saved language
+    document.addEventListener('DOMContentLoaded', function () {
+        const savedLanguage = localStorage.getItem('selectedLanguage');
+        if (savedLanguage) {
+            document.getElementById('language').value = savedLanguage;
+        }
+    });
+
+    // Function to attach the selected language to forms before submission
+    function attachLanguageToForms() {
+        const language = localStorage.getItem('selectedLanguage') || 'en';
+        // Append a hidden input for language to each form
+        document.querySelectorAll('form').forEach(form => {
+            if (!form.querySelector('input[name="language"]')) {
+                const languageInput = document.createElement('input');
+                languageInput.type = 'hidden';
+                languageInput.name = 'language';
+                languageInput.value = language;
+                form.appendChild(languageInput);
+            }
+        });
+    }
+
+    // Attach language to forms on submission
+    document.querySelectorAll('form').forEach(form => {
+        form.addEventListener('submit', attachLanguageToForms);
+    });
+
+
     let page = 2; // Start from page 2 since page 1 is already loaded
     let isLoading = false;
     let isUppercase = false;

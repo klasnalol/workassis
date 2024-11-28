@@ -1,10 +1,8 @@
-import json
 import os
 import sqlite3
 import sounddevice as sd
-import wave
 from scipy.io.wavfile import write
-from flask import Flask, request, render_template, redirect, url_for, flash, jsonify, session
+from flask import Flask, request, render_template, redirect, url_for, flash, session
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from openai import OpenAI
@@ -40,8 +38,7 @@ def ensure_table_exists():
             description TEXT NOT NULL,
             price REAL NOT NULL,
             image TEXT NOT NULL
-        )
-    ''')
+        )''')
     conn.commit()
     conn.close()
 
