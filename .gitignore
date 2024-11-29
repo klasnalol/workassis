@@ -1,0 +1,16 @@
+# ignore editor-specific
+.idea/*
+.vscode/*
+# ignore env file
+.env
+
+# ignore venv files
+include/*
+lib/*
+lib64/*
+bin/*
+pyvenv.cfg
+
+# ignore logs
+**.log
+
