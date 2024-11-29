@@ -2,8 +2,7 @@ import logging
 
 import eventlet
 eventlet.monkey_patch()
-import os
-import sqlite3
+import os, sqlite3, time
 import sounddevice as sd
 from scipy.io.wavfile import write
 from flask import Flask, request, render_template, redirect, url_for, flash, session, jsonify
@@ -68,7 +67,8 @@ def record_voice(duration=5, filename="voice_input.wav"):
     fs = 44100  # Sample rate
     print("Recording...")
     recording = sd.rec(int(duration * fs), samplerate=fs, channels=1)
-    sd.wait()  # Wait until recording is finished
+    # sd.wait()  # Wait until recording is finished
+    time.sleep(duration)
     write(filename, fs, recording)  # Save as WAV file
     print("Recording complete.")
     return filename
