@@ -2,3 +2,4 @@
 **/.env
 lib/*
 lib64/*
+**.log
