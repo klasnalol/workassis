@@ -1,5 +1,6 @@
 .idea/**
 **/.env
-(n/)?lib/*
-(n/)?lib64/*
-
+lib/*
+lib64/*
+n/lib/*
+n/lib64/*
