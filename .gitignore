@@ -20,3 +20,7 @@ pyvenv.cfg
 
 # binary data
 voice_input.wav
+
+# hidden files
+*.hidden
+*.hidden.*
