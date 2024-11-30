@@ -39,8 +39,8 @@ class Base:
         ''')
         conn.commit()
         conn.close()
-
     # Voice recording function
+    @staticmethod
     def record_voice(duration=5, filename: str = "voice_input.wav") -> str:
         """Record audio for a given duration and save to a file."""
         fs = 44100  # Sample rate

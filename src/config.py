@@ -16,7 +16,7 @@ class Config:
     app: Flask
     socketio: SocketIO
     database: str 
-
+    client: OpenAI
 
     def __init_vars__(self, app_name, database) -> None:
         self.app = Flask(app_name)
