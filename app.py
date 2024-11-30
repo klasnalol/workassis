@@ -64,7 +64,7 @@ def voice_input():
 
         # Transcribe using Whisper
         with open(voice_file, "rb") as audio_file:
-            transcription = base.client.audio.transcriptions.create(
+            transcription = config.client.audio.transcriptions.create(
                 model="whisper-1",
                 file=audio_file,
                 language=selected_language  # Specify the language for transcription
@@ -73,7 +73,7 @@ def voice_input():
             print(text_query)
 
         # Pass transcription to GPT
-        response = base.client.chat.completions.create(
+        response = config.client.chat.completions.create(
             messages=[{"role": "user", "content": text_query}],
             model="gpt-4o"
         )
@@ -183,7 +183,7 @@ def return_product():
         voice_file = Base.record_voice(duration=5, filename="voice_input.wav")
         # Transcribe using Whisper with the selected language
         with open(voice_file, "rb") as audio_file:
-            transcription = base.client.audio.transcriptions.create(
+            transcription = config.client.audio.transcriptions.create(
                 model="whisper-1",
                 file=audio_file,
                 language=selected_language
@@ -345,7 +345,7 @@ def text_to_speech(response_text, output_file="response_audio.wav", language="en
 
     voice = language_voice_map.get(language, 'alloy')
 
-    with base.client.audio.speech.with_streaming_response.create(
+    with config.client.audio.speech.with_streaming_response.create(
             model="tts-1",
             voice=voice,
             input=response_text
@@ -368,7 +368,7 @@ def get_more_info(product_id):
         if product:
             # Generate additional information using GPT
             prompt = f"Tell me about this product in 20-30 words: {product['name']}"
-            response = base.client.chat.completions.create(
+            response = config.client.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
                 model="gpt-4o",
                 temperature=0
@@ -464,11 +464,11 @@ def handle_text_message(data):
         session['chat_history'].append({'role': 'user', 'content': user_message, 'timestamp': timestamp})
         session.modified = True  # Mark session as modified to save changes
 
-        # Emit user message to base.client immediately
+        # Emit user message to config.client immediately
         emit('receive_message', {'role': 'user', 'content': user_message, 'timestamp': timestamp}, broadcast=True)
 
         # Pass user message to GPT
-        response = base.client.chat.completions.create(
+        response = config.client.chat.completions.create(
             messages=[{'role': 'user', 'content': user_message}],
             model='gpt-4o'
         )
@@ -478,7 +478,7 @@ def handle_text_message(data):
         session['chat_history'].append({'role': 'bot', 'content': bot_message, 'timestamp': timestamp})
         session.modified = True  # Mark session as modified to save changes
 
-        # Emit bot response back to the base.client
+        # Emit bot response back to the config.client
         emit('receive_message', {'role': 'bot', 'content': bot_message, 'timestamp': timestamp}, broadcast=True)
     except Exception as e:
         emit('receive_message', {'role': 'error', 'content': f'Error: {str(e)}'}, broadcast=True)
