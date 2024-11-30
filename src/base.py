@@ -1,17 +1,21 @@
-from src.config import DATABASE
+import sqlite3
+import time
+import sounddevice as sd
+from scipy.io.wavfile import write
+
 
 class Base:
-    database:str = DATABASE
+    database: str
 
-    def __init__(self, database:str = DATABASE) -> None:
+    def __init__(self, database: str) -> None:
         self.database = database
 
-    def get_db_connection(database):
-        conn = sqlite3.connect(database)
+    def get_db_connection(self):
+        conn = sqlite3.connect(self.database)
         conn.row_factory = sqlite3.Row
         return conn
 
-    def ensure_table_exists():
+    def ensure_table_exists(self):
         """Ensure that the products table exists in the database."""
         conn = self.get_db_connection()
         cursor = conn.cursor()
@@ -37,7 +41,7 @@ class Base:
         conn.close()
 
     # Voice recording function
-    def record_voice(duration=5, filename:str ="voice_input.wav") -> str:
+    def record_voice(duration=5, filename: str = "voice_input.wav") -> str:
         """Record audio for a given duration and save to a file."""
         fs = 44100  # Sample rate
         print("Recording...")

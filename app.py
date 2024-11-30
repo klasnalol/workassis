@@ -1,30 +1,32 @@
+import eventlet
+eventlet.monkey_patch()
 # import logging
+import os, sqlite3, time
+import sounddevice as sd
+from scipy.io.wavfile import write
+from flask import Flask, request, render_template, redirect, url_for, flash, session, jsonify
+from werkzeug.security import generate_password_hash, check_password_hash
+from werkzeug.utils import secure_filename
+from openai import OpenAI
+from flask_socketio import SocketIO, emit
+from datetime import datetime
 
-# import eventlet
-# eventlet.monkey_patch()
-# import os, sqlite3, time
-# import sounddevice as sd
-# from scipy.io.wavfile import write
-# from flask import Flask, request, render_template, redirect, url_for, flash, session, jsonify
-# from werkzeug.security import generate_password_hash, check_password_hash
-# from werkzeug.utils import secure_filename
-# from openai import OpenAI
-# from flask_socketio import SocketIO, emit
-# from datetime import datetime
-
-from src.config import DATABASE
+from src.config import Config
 from src.base import Base 
 
-base = Base(database = DATABASE)
+config = Config(app_name=__name__, database="database.db")
+base = Base(database = config.database)
 
 # Call this function to ensure the table exists
 base.ensure_table_exists()
-
+app = config.app
+# socketio = config.socketio
+ 
 # Home route
 @app.route('/')
 def index():
     # Load initial set of products to display on the homepage
-    conn = get_db_connection()
+    conn = base.get_db_connection()
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     cursor.execute("SELECT id, name, description, price, image, category FROM products LIMIT 10")
@@ -42,7 +44,6 @@ def index():
             "category": product["category"],
             "image_url": image_url,
         })
-
     return render_template('index.html', products=products_json)
 
 
@@ -108,7 +109,7 @@ def add_product():
             return redirect(url_for('add_product'))
 
         # Add product to the database
-        conn = get_db_connection()
+        conn = base.get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
             "INSERT INTO products (name, description, price, image, category) VALUES (?, ?, ?, ?, ?)",
@@ -135,7 +136,7 @@ def save_product(product_id):
         price = float(data['price'].replace('$', ''))
         category = data['category']
 
-        conn = get_db_connection()
+        conn = base.get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
             "UPDATE products SET name = ?, description = ?, price = ?, category = ? WHERE id = ?",
@@ -155,7 +156,7 @@ def delete_product(product_id):
         return jsonify({'success': False, 'error': 'Access denied'}), 403
 
     try:
-        conn = get_db_connection()
+        conn = base.get_db_connection()
         cursor = conn.cursor()
         cursor.execute("DELETE FROM products WHERE id = ?", (product_id,))
         conn.commit()
@@ -192,7 +193,7 @@ def return_product():
         cleaned_text_query = preprocess_text(text_query)
         print(f"Cleaned transcription: {cleaned_text_query}")
 
-        conn = get_db_connection()
+        conn = base.get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -222,7 +223,7 @@ def register():
 
         hashed_password = generate_password_hash(password)
 
-        conn = get_db_connection()
+        conn = base.get_db_connection()
         cursor = conn.cursor()
         try:
             cursor.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
@@ -244,7 +245,7 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        conn = get_db_connection()
+        conn = base.get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
         user = cursor.fetchone()
@@ -278,7 +279,7 @@ def admin_panel():
     search_query = request.form.get('search', '')
     category_filter = request.form.get('category', '')
 
-    conn = get_db_connection()
+    conn = base.get_db_connection()
     cursor = conn.cursor()
     if search_query:
         cursor.execute(
@@ -303,7 +304,7 @@ def search_products():
     price_range = request.args.get('price_range', '')
     selected_language = request.args.get('language', 'en')  # Capture the selected language
 
-    conn = get_db_connection()
+    conn = base.get_db_connection()
     conn.row_factory = sqlite3.Row  # This allows accessing columns by name
     cursor = conn.cursor()
 
@@ -357,7 +358,7 @@ def text_to_speech(response_text, output_file="response_audio.wav", language="en
 @app.route('/get_more_info/<int:product_id>', methods=['GET'])
 def get_more_info(product_id):
     try:
-        conn = get_db_connection()
+        conn = base.get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT name FROM products WHERE id = ?", (product_id,))
         product = cursor.fetchone()
@@ -394,7 +395,7 @@ def load_more_products():
     items_per_page = 10
     offset = (page - 1) * items_per_page
 
-    conn = get_db_connection()
+    conn = base.get_db_connection()
     conn.row_factory = sqlite3.Row  # This allows accessing columns by name
     cursor = conn.cursor()
     cursor.execute("SELECT id, name, description, price, image, category FROM products LIMIT ? OFFSET ?", (items_per_page, offset))
@@ -425,7 +426,7 @@ def chat():
     return render_template('chat.html', chat_history=session['chat_history'])
 
 # Real-time chat communication via text
-@socketio.on('send_text_message')
+@config.socketio.on('send_text_message')
 def handle_text_message(data):
     try:
         user_message = data.get('message', '')
@@ -456,6 +457,7 @@ def handle_text_message(data):
     except Exception as e:
         emit('receive_message', {'role': 'error', 'content': f'Error: {str(e)}'}, broadcast=True)
 
+
 # Start Flask app
 if __name__ == '__main__':
-    socketio.run(app, host='127.0.0.1', port=5002, debug=True)
+    config.app_start(host='127.0.0.1', port=5002, debug=True)
