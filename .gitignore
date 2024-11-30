@@ -11,6 +11,10 @@ lib64/*
 bin/*
 pyvenv.cfg
 
+# Python cache files
+**/__pycache__/
+**.pyc
+
 # ignore logs
 **.log
 
