@@ -2,7 +2,7 @@
 .idea/*
 .vscode/*
 # ignore env file
-.env
+.env*
 
 # ignore venv files
 include/*
