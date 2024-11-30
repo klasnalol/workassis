@@ -1,77 +1,24 @@
-import logging
+# import logging
 
-import eventlet
-eventlet.monkey_patch()
-import os, sqlite3, time
-import sounddevice as sd
-from scipy.io.wavfile import write
-from flask import Flask, request, render_template, redirect, url_for, flash, session, jsonify
-from werkzeug.security import generate_password_hash, check_password_hash
-from werkzeug.utils import secure_filename
-from openai import OpenAI
-from flask_socketio import SocketIO, emit
-from datetime import datetime
+# import eventlet
+# eventlet.monkey_patch()
+# import os, sqlite3, time
+# import sounddevice as sd
+# from scipy.io.wavfile import write
+# from flask import Flask, request, render_template, redirect, url_for, flash, session, jsonify
+# from werkzeug.security import generate_password_hash, check_password_hash
+# from werkzeug.utils import secure_filename
+# from openai import OpenAI
+# from flask_socketio import SocketIO, emit
+# from datetime import datetime
 
-logging.basicConfig(filename='app.log', level=logging.DEBUG)
-# Initialize Flask app
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads'
-app.secret_key = 'supersecretkey'  # Needed for flash messages
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+from src.config import DATABASE
+from src.base import Base 
 
-# Initialize SocketIO for real-time updates
-socketio = SocketIO(app, async_mode='eventlet')
-
-# OpenAI client setup
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
-
-# Database configuration
-DATABASE = 'database.db'
-
-def get_db_connection():
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-def ensure_table_exists():
-    """Ensure that the products table exists in the database."""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS products (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        category TEXT NOT NULL DEFAULT '',
-        description TEXT NOT NULL,
-        price REAL NOT NULL,
-        image TEXT NOT NULL
-    )
-    ''')
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL,
-        role TEXT NOT NULL DEFAULT 'user'
-    )
-    ''')
-    conn.commit()
-    conn.close()
+base = Base(database = DATABASE)
 
 # Call this function to ensure the table exists
-ensure_table_exists()
-
-# Voice recording function
-def record_voice(duration=5, filename="voice_input.wav"):
-    """Record audio for a given duration and save to a file."""
-    fs = 44100  # Sample rate
-    print("Recording...")
-    recording = sd.rec(int(duration * fs), samplerate=fs, channels=1)
-    # sd.wait()  # Wait until recording is finished
-    time.sleep(duration)
-    write(filename, fs, recording)  # Save as WAV file
-    print("Recording complete.")
-    return filename
+base.ensure_table_exists()
 
 # Home route
 @app.route('/')
@@ -111,7 +58,7 @@ def voice_input():
 
     try:
         # Record voice for 5 seconds
-        voice_file = record_voice(duration=5, filename="voice_input.wav")
+        voice_file = Base.record_voice(duration=5, filename="voice_input.wav")
 
         # Transcribe using Whisper
         with open(voice_file, "rb") as audio_file:
@@ -231,8 +178,7 @@ def return_product():
         selected_language = request.form.get('language', 'en')
 
         # Record voice for 5 seconds
-        voice_file = record_voice(duration=5, filename="voice_input.wav")
-
+        voice_file = Base.record_voice(duration=5, filename="voice_input.wav")
         # Transcribe using Whisper with the selected language
         with open(voice_file, "rb") as audio_file:
             transcription = client.audio.transcriptions.create(
