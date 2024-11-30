@@ -1,4 +1,5 @@
 import logging
+import time
 
 import eventlet
 eventlet.monkey_patch()
@@ -68,7 +69,7 @@ def record_voice(duration=5, filename="voice_input.wav"):
     fs = 44100  # Sample rate
     print("Recording...")
     recording = sd.rec(int(duration * fs), samplerate=fs, channels=1)
-    sd.wait()  # Wait until recording is finished
+    time.sleep(duration)  # Wait until recording is finished
     write(filename, fs, recording)  # Save as WAV file
     print("Recording complete.")
     return filename
@@ -120,7 +121,7 @@ def voice_input():
                 file=audio_file,
                 language=selected_language  # Specify the language for transcription
             )
-            text_query = transcription['text']
+            text_query = transcription.text
             print(text_query)
 
         # Pass transcription to GPT
@@ -240,7 +241,7 @@ def return_product():
                 file=audio_file,
                 language=selected_language
             )
-            text_query = transcription['text']
+            text_query = transcription.text
             print(f"Raw transcription: {text_query}")
 
         cleaned_text_query = preprocess_text(text_query)
@@ -477,6 +478,31 @@ def chat():
     if 'chat_history' not in session:
         session['chat_history'] = []
     return render_template('chat.html', chat_history=session['chat_history'])
+
+@app.route('/chat_voice', methods=['POST'])
+def chat_voice():
+    try:
+        # Process voice input and generate responses
+        voice_file = record_voice(duration=5, filename="voice_input.wav")
+        with open(voice_file, "rb") as audio_file:
+            transcription = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file
+            )
+            user_message = transcription.text  # Capture user-transcribed message
+
+        response = client.chat.completions.create(
+            messages=[{"role": "user", "content": user_message}],
+            model="gpt-4o"
+        )
+        bot_message = response.choices[0].message.content
+
+        return jsonify({
+            'user_message': user_message,
+            'bot_message': bot_message
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # Real-time chat communication via text
 @socketio.on('send_text_message')
