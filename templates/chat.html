@@ -46,8 +46,25 @@
 
     // Handle receiving a message from the server
     socket.on('receive_message', (data) => {
-        appendMessageToChatBox(data.role, data.content, data.timestamp);
+    const { role, content, timestamp, voice_url } = data;
+
+    if (role === 'error') {
+        alert(content);
+        return;
+    }
+
+    // Append the message to the chat UI
+    appendMessageToChatBox(role, content, timestamp);
+
+    // If there's a voice URL, play the audio
+    if (voice_url) {
+        const audioElement = new Audio(voice_url);
+        audioElement.play();
+        }
     });
+
+
+
 
     // Append messages to the chat box
     function appendMessageToChatBox(role, content, timestamp) {
@@ -77,6 +94,7 @@
                 } else {
                     const userMessage = response.user_message;
                     const botMessage = response.bot_message;
+                    const botVoiceUrl = response.bot_voice_url;
 
                     // Append user message
                     const timestamp = new Date().toLocaleTimeString();
@@ -84,6 +102,9 @@
 
                     // Append bot response
                     appendMessageToChatBox('bot', botMessage, timestamp);
+
+                    const audioElement = new Audio(botVoiceUrl);
+                    audioElement.play();
                 }
             },
             error: function(err) {

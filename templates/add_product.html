@@ -8,6 +8,12 @@
     <form action="{{ url_for('add_product') }}" method="post" enctype="multipart/form-data">
         <label>Name:</label>
         <input type="text" name="name" required><br><br>
+        <label>Category:</label>
+        <select name="category" required>
+            <option value="electronics">Electronics</option>
+            <option value="fashion">Fashion</option>
+            <option value="home">Home</option>
+        </select><br><br>
         <label>Description:</label>
         <textarea name="description" rows="4" cols="50" required></textarea><br><br>
         <label>Price:</label>
