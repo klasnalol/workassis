@@ -9,14 +9,15 @@
         <label>Name:</label>
         <input type="text" name="name" required><br><br>
         <label>Category:</label>
-        <select name="category" required>
-            <option value="electronics">Electronics</option>
-            <option value="fashion">Fashion</option>
-            <option value="home">Home</option>
-        </select><br><br>
+        <select name="category">
+                    <option value="">Select Category</option>
+                    {% for cat in categories %}
+                    <option value="{{ cat }}">{{ cat|capitalize }}</option>
+                    {% endfor %}
+            </select><br><br>
         <label>Description:</label>
         <textarea name="description" rows="4" cols="50" required></textarea><br><br>
-        <label>Price:</label>
+        <label>Price(₸):</label>
         <input type="number" step="0.01" name="price" required><br><br>
         <label>Image:</label>
         <input type="file" name="image" accept="image/*" required><br><br>

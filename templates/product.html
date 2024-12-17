@@ -4,32 +4,35 @@
 
 {% block content %}
 <section>
-    <h2>Products Matching Your Query</h2>
-    <p>Your query: <strong>{{ query }}</strong></p>
+    <h2>{{ translations['products_matching_query'] }}</h2>
+    <p>{{ translations['your_query'] }}: <strong>{{ query }}</strong></p>
     <table border="1" style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Price</th>
-                <th>Image</th>
+                <th>{{ translations['id'] }}</th>
+                <th>{{ translations['name'] }}</th>
+                <th>{{ translations['category'] }}</th>
+                <th>{{ translations['description'] }}</th>
+                <th>{{ translations['price'] }}</th>
+                <th>{{ translations['image'] }}</th>
             </tr>
         </thead>
         <tbody>
             {% for product in products %}
-            <tr>
-                <td>{{ product['id'] }}</td>
-                <td>{{ product['name'] }}</td>
-                <td>{{ product['description'] }}</td>
-                <td>${{ product['price'] }}</td>
-                <td>
-                    <img src="{{ url_for('static', filename='uploads/' + product['image']) }}" alt="{{ product['name'] }}" style="max-width: 100px;">
-                </td>
-            </tr>
+                <tr>
+                    <td>{{ product[0] }}</td>  <!-- product ID -->
+                    <td>{{ product[1] }}</td>  <!-- product name -->
+                    <td>{{ product[2] }}</td>  <!-- category name -->
+                    <td>{{ product[3] }}</td>  <!-- product description -->
+                    <td>₸ {{ product[4] }}</td>  <!-- product price -->
+                    <td>
+                        <img src="{{ url_for('static', filename='uploads/' + product[5]) }}" alt="{{ product[1] }}" style="max-width: 100px;">
+                    </td>
+                </tr>
             {% endfor %}
         </tbody>
     </table>
-    <a href="{{ url_for('index') }}">Go Back</a>
+    <a href="{{ url_for('index') }}">{{ translations['go_back'] }}</a>
 </section>
+
 {% endblock %}
