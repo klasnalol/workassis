@@ -332,7 +332,7 @@ def return_product():
                         "For example, if the user says 'Please show videocameras', 
                         "return 'videocameras'. If the user says 'Find me some nice laptops', 
                         "return 'laptops'. Return only the main product keyword. But also try to extract not 
-                        only the main product keyword. but also description(if no product given) or its category(like fashion or electronics)'''
+                        only the main product keyword. but also description(if no product given) or its category(like fashion or electronics). REMEMBER TO EXTRACT ONLY ONE OF THREE, product name is more prior always'''
                     )
                 },
                 {"role": "user", "content": cleaned_text_query}

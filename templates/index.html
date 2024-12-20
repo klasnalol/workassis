@@ -4,49 +4,20 @@
 
 {% block content %}
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-pZw+V4F2Z+1kZxGLQGq4HvO8+FvH9sE98VvNJUqkN3Z3eTTcSyYB+eJLjEJjV+F5LZX2x3Q8NhgVYxXhZtC1BA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-
 <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<style>
-/* Recording Animation Styles */
-    .recording-animation {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: red;
-    }
-    .mic-icon {
-        margin-right: 10px;
-        animation: pulse 1s infinite;
-    }
-    .pulse {
-        width: 10px;
-        height: 10px;
-        background-color: red;
-        border-radius: 50%;
-        animation: pulse 1s infinite;
-    }
-    @keyframes pulse {
-        0% {
-            transform: scale(0.8);
-            opacity: 1;
-        }
-        100% {
-            transform: scale(1.4);
-            opacity: 0;
-        }
-    }
 
-    /* Utility Class to Hide Elements */
-    .d-none {
-        display: none !important;
-    }
-</style>
 <main>
+    <!-- Video Overlay -->
+    <div id="video-overlay">
+        <button id="close-video-btn">&times;</button>
+        <video id="idle-video" src="/static/video/a.mp4" autoplay muted loop></video>
+    </div>
+
     <!-- Voice Query Full Width -->
     <section class="voice-query-fullwidth">
         <h2>{{ translations['search_voice'] }}</h2>
-        <!-- Updated form for /voice_input with microphone selection and recording controls -->
+        <!-- Updated form for /voice_input -->
         <form id="voice-input-form" action="/voice_input" method="post" enctype="multipart/form-data" style="display: none">
             <label for="mic-select-voice">{{ translations['microphone'] }}:</label>
             <select id="mic-select-voice"></select>
@@ -54,7 +25,7 @@
             <button type="button" id="stop-record-btn-voice" class="full-width-btn" disabled>Stop Recording</button>
         </form>
 
-        <!-- Updated form for /return_product with microphone selection and recording controls -->
+        <!-- Updated form for /return_product -->
         <form id="return-product-form" action="/return_product" method="post" enctype="multipart/form-data">
             <label for="mic-select-return">{{ translations['microphone'] }}:</label>
             <select id="mic-select-return"></select>
@@ -77,7 +48,7 @@
 
     <!-- Product List with Infinite Scrolling -->
     <section id="product-list">
-    <h2>{{ translations['product_list'] }}</h2>
+        <h2>{{ translations['product_list'] }}</h2>
         <div id="products-container" class="products-grid">
             {% for product in products %}
                 <div class="product-item">
@@ -86,7 +57,6 @@
                     </div>
                     <button class="details-toggle" onclick="toggleDetails(this)">{{ translations['more_info'] }}</button>
                     <div class="product-details">
-                        <!-- New Less Info Button -->
                         <button type="button" class="less-info-btn" onclick="closeDetails(this)">{{ translations['less_info'] }}</button>
                         <h3>{{ product.name }}</h3>
                         <p>{{ product.description }}</p>
@@ -99,7 +69,14 @@
             {% endfor %}
         </div>
     </section>
+
 </main>
+
+<!-- Floating Mic Button -->
+<button id="floating-mic-btn">
+    <img src="/static/images/mic.png" alt="Microphone" style="width:60px;height:60px;">
+</button>
+
 
 <!-- Search Sidebar -->
 <div id="search-sidebar" class="search-sidebar">
@@ -163,38 +140,36 @@
     });
 
     async function loadMoreProducts() {
-            try {
-                isLoading = true;
-                const response = await fetch(`/load_more_products?page=${page}`);
-                if (!response.ok) throw new Error('Failed to fetch products.');
+        try {
+            isLoading = true;
+            const response = await fetch(`/load_more_products?page=${page}`);
+            if (!response.ok) throw new Error('Failed to fetch products.');
 
-                const products = await response.json();
-                console.log('Loaded products:', products); // Debugging
+            const products = await response.json();
 
-                if (products.length === 0) {
-                    console.log("No more products to load.");
-                    return;
-                }
+            if (products.length === 0) {
+                return;
+            }
 
-                const container = document.getElementById('products-container');
-                products.forEach(product => {
-                    const productDiv = document.createElement('div');
-                    productDiv.className = 'product-item';
-                    productDiv.innerHTML = `
-                        <div class="product-image">
-                            <img src="${product.image_url}" alt="${product.name}" />
-                        </div>
-                        <button class="details-toggle" onclick="toggleDetails(this)">More Info</button>
-                        <div class="product-details">
-                            <button type="button" class="less-info-btn" onclick="closeDetails(this)">Less Info</button>
-                            <h3>${product.name}</h3>
-                            <p>${product.description}</p>
-                            <p>Price: $${product.price}</p>
-                            <p>Category: ${product.category}</p>
-                        </div>
-                    `;
-                    container.appendChild(productDiv);
-                });
+            const container = document.getElementById('products-container');
+            products.forEach(product => {
+                const productDiv = document.createElement('div');
+                productDiv.className = 'product-item';
+                productDiv.innerHTML = `
+                    <div class="product-image">
+                        <img src="${product.image_url}" alt="${product.name}" />
+                    </div>
+                    <button class="details-toggle" onclick="toggleDetails(this)">More Info</button>
+                    <div class="product-details">
+                        <button type="button" class="less-info-btn" onclick="closeDetails(this)">Less Info</button>
+                        <h3>${product.name}</h3>
+                        <p>${product.description}</p>
+                        <p>Price: $${product.price}</p>
+                        <p>Category: ${product.category}</p>
+                    </div>
+                `;
+                container.appendChild(productDiv);
+            });
 
             page += 1;
         } catch (error) {
@@ -204,7 +179,6 @@
         }
     }
 
-
     // Toggle Product Details with More Info button
     function toggleDetails(button) {
         const details = button.nextElementSibling;
@@ -212,14 +186,12 @@
         button.textContent = isOpen ? 'Less Info' : 'More Info';
     }
 
-    // Close Product Details with Less Info button inside the overlay
+    // Close Product Details with Less Info button
     function closeDetails(btn) {
         const details = btn.closest('.product-details');
         const item = details.closest('.product-item');
         const toggleBtn = item.querySelector('.details-toggle');
-        // Close the details overlay
         details.classList.remove('open');
-        // Reset the toggle button text to "More Info"
         toggleBtn.textContent = 'More Info';
     }
 
@@ -298,6 +270,7 @@
         }
     });
 </script>
+
 <script>
     let mediaRecorderVoice, mediaRecorderReturn;
     let recordedChunksVoice = [];
@@ -311,6 +284,7 @@
     const stopBtnReturn = document.getElementById('stop-record-btn-return');
     const formVoice = document.getElementById('voice-input-form');
     const formReturn = document.getElementById('return-product-form');
+    const floatingMicBtn = document.getElementById('floating-mic-btn');
 
     async function populateMicrophones() {
         const devices = await navigator.mediaDevices.enumerateDevices();
@@ -332,10 +306,60 @@
         });
     }
 
-    // Populate on load
+    // Populate microphones on load
     populateMicrophones();
 
-    // Voice recording logic for /voice_input
+    // Handle click on floating mic button: replicate start of voice input
+    floatingMicBtn.addEventListener('click', async () => {
+        // Ensure we have a selected microphone
+        if (!micSelectVoice.value) {
+            alert("Please select a microphone first.");
+            return;
+        }
+
+        recordedChunksVoice = [];
+        const deviceId = micSelectVoice.value;
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId ? { exact: deviceId } : undefined } });
+        mediaRecorderVoice = new MediaRecorder(stream);
+
+        mediaRecorderVoice.ondataavailable = (event) => {
+            recordedChunksVoice.push(event.data);
+        };
+
+        mediaRecorderVoice.onstop = async () => {
+            const audioBlob = new Blob(recordedChunksVoice, { type: 'audio/webm' });
+            const formData = new FormData(formVoice);
+            formData.append('audio_file', audioBlob, 'voice_input.webm');
+            try {
+                const response = await fetch(formVoice.action, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    const resultHtml = await response.text();
+                    document.open();
+                    document.write(resultHtml);
+                    document.close();
+                } else {
+                    console.error('Failed to submit audio.');
+                    alert('Failed to submit audio. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error submitting audio:', error);
+                alert('Error submitting audio. Please try again.');
+            }
+        };
+
+        mediaRecorderVoice.start();
+        // Automatically stop after 5 seconds
+        setTimeout(() => {
+            if (mediaRecorderVoice && mediaRecorderVoice.state !== 'inactive') {
+                mediaRecorderVoice.stop();
+            }
+        }, 5000);
+    });
+
+    // Existing voice_input logic
     startBtnVoice.addEventListener('click', async () => {
         recordedChunksVoice = [];
         const deviceId = micSelectVoice.value;
@@ -350,7 +374,6 @@
             const audioBlob = new Blob(recordedChunksVoice, { type: 'audio/webm' });
             const formData = new FormData(formVoice);
             formData.append('audio_file', audioBlob, 'voice_input.webm');
-            // Submit the form via fetch
             try {
                 const response = await fetch(formVoice.action, {
                     method: 'POST',
@@ -358,7 +381,6 @@
                 });
                 if (response.ok) {
                     const resultHtml = await response.text();
-                    // Replace the current document's content with the response
                     document.open();
                     document.write(resultHtml);
                     document.close();
@@ -394,7 +416,7 @@
         }
     });
 
-    // Voice recording logic for /return_product
+    // For return_product
     startBtnReturn.addEventListener('click', async () => {
         recordedChunksReturn = [];
         const deviceId = micSelectReturn.value;
@@ -409,7 +431,6 @@
             const audioBlob = new Blob(recordedChunksReturn, { type: 'audio/webm' });
             const formData = new FormData(formReturn);
             formData.append('audio_file', audioBlob, 'voice_input.webm');
-            // Submit the form via fetch
             try {
                 const response = await fetch(formReturn.action, {
                     method: 'POST',
@@ -417,20 +438,16 @@
                 });
                 if (response.ok) {
                     const resultHtml = await response.text();
-                    // Replace the current document's content with the response
                     document.open();
                     document.write(resultHtml);
                     document.close();
                 } else {
                     console.error('Failed to submit audio.');
-                    //alert('Failed to submit audio. Please try again.');
                 }
             } catch (error) {
                 console.error('Error submitting audio:', error);
                 alert('Error submitting audio. Please try again.');
             }
-
-            // Hide the recording animation when recording stops
             hideRecordingAnimation();
         };
         showRecordingAnimation();
@@ -455,15 +472,45 @@
             stopBtnReturn.disabled = true;
         }
     });
-    // Show recording animation
+
     function showRecordingAnimation() {
         $('#recording-animation').removeClass('d-none');
     }
 
-    // Hide recording animation
     function hideRecordingAnimation() {
         $('#recording-animation').addClass('d-none');
     }
-</script>
 
+    // Idle Detection for Video Overlay
+    let idleTimer;
+    const idleTime = 120000; // 2 minutes in ms
+    const videoOverlay = document.getElementById('video-overlay');
+    const closeVideoBtn = document.getElementById('close-video-btn');
+
+    function showVideoOverlay() {
+        videoOverlay.style.display = 'flex';
+        const video = document.getElementById('idle-video');
+        video.play();
+    }
+
+    function hideVideoOverlay() {
+        videoOverlay.style.display = 'none';
+        resetIdleTimer();
+    }
+
+    function resetIdleTimer() {
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(showVideoOverlay, idleTime);
+    }
+
+    // Listen for user activity to reset timer
+    ['mousemove', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
+        window.addEventListener(evt, resetIdleTimer, false);
+    });
+
+    closeVideoBtn.addEventListener('click', hideVideoOverlay);
+
+    // Show overlay as soon as the page loads
+    window.addEventListener('load', showVideoOverlay);
+</script>
 {% endblock %}
