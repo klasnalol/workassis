@@ -14,10 +14,10 @@ from datetime import datetime
 from src.config import Config
 from src.base import Base 
 
-import routes
+# import routes
 
 
-config = Config(app_name=__name__, database="database.db")
+config = Config(app_name=__name__, database="database.db", host="0.0.0.0", port=5002, debug=True)
 base = Base(database = config.database)
 
 # Call this function to ensure the table exists
@@ -486,4 +486,4 @@ def handle_text_message(data):
 
 # Start Flask app
 if __name__ == '__main__':
-    config.app_start(host='127.0.0.1', port=5002, debug=True)
+    config.app_start()
