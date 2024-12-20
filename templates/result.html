@@ -6,6 +6,7 @@
 <section>
     <h2>Query Result</h2>
     <p><strong>Your Query:</strong> {{ query }}</p>
+    <p><strong>GPT answer: </strong>{{ response }}</p>
     <h3>Suggested Products</h3>
     {% if products and products|length > 0 %}
         <div class="products-grid">

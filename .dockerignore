@@ -1,8 +1,6 @@
 # ignore editor-specific
 .idea/*
 .vscode/*
-# ignore env file
-.env*
 
 # ignore venv files
 include/*

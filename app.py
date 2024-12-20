@@ -1,9 +1,7 @@
-import logging
-
 import eventlet
 eventlet.monkey_patch()
-import os
-import sqlite3
+# import logging
+import os, sqlite3, time
 import sounddevice as sd
 from scipy.io.wavfile import write
 from flask import Flask, request, render_template, redirect, url_for, flash, session, jsonify
@@ -13,72 +11,24 @@ from openai import OpenAI
 from flask_socketio import SocketIO, emit
 from datetime import datetime
 
-logging.basicConfig(filename='app.log', level=logging.DEBUG)
-# Initialize Flask app
-app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = 'uploads'
-app.secret_key = 'supersecretkey'  # Needed for flash messages
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+from src.config import Config
+from src.base import Base 
 
-# Initialize SocketIO for real-time updates
-socketio = SocketIO(app, async_mode='eventlet')
+# import routes
 
-# OpenAI client setup
-client = OpenAI(api_key=os.environ.get("OPENAI_API_KEY"))
 
-# Database configuration
-DATABASE = 'database.db'
-
-def get_db_connection():
-    conn = sqlite3.connect(DATABASE)
-    conn.row_factory = sqlite3.Row
-    return conn
-
-def ensure_table_exists():
-    """Ensure that the products table exists in the database."""
-    conn = get_db_connection()
-    cursor = conn.cursor()
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS products (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name TEXT NOT NULL,
-        category TEXT NOT NULL DEFAULT '',
-        description TEXT NOT NULL,
-        price REAL NOT NULL,
-        image TEXT NOT NULL
-    )
-    ''')
-    cursor.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY AUTOINCREMENT,
-        username TEXT NOT NULL UNIQUE,
-        password TEXT NOT NULL,
-        role TEXT NOT NULL DEFAULT 'user'
-    )
-    ''')
-    conn.commit()
-    conn.close()
+config = Config(app_name=__name__, database="database.db", host="0.0.0.0", port=5002, debug=True)
+base = Base(database = config.database)
 
 # Call this function to ensure the table exists
-ensure_table_exists()
-
-# Voice recording function
-def record_voice(duration=5, filename="voice_input.wav"):
-    """Record audio for a given duration and save to a file."""
-    fs = 44100  # Sample rate
-    print("Recording...")
-    recording = sd.rec(int(duration * fs), samplerate=fs, channels=1)
-    sd.wait()  # Wait until recording is finished
-    write(filename, fs, recording)  # Save as WAV file
-    print("Recording complete.")
-    return filename
+base.ensure_table_exists()
+app = config.app
 
 # Home route
 @app.route('/')
 def index():
     # Load initial set of products to display on the homepage
-    conn = get_db_connection()
-    conn.row_factory = sqlite3.Row
+    conn = base.get_db_connection()
     cursor = conn.cursor()
     cursor.execute("SELECT id, name, description, price, image, category FROM products LIMIT 10")
     products = cursor.fetchall()
@@ -95,7 +45,6 @@ def index():
             "category": product["category"],
             "image_url": image_url,
         })
-
     return render_template('index.html', products=products_json)
 
 
@@ -111,20 +60,20 @@ def voice_input():
 
     try:
         # Record voice for 5 seconds
-        voice_file = record_voice(duration=5, filename="voice_input.wav")
+        voice_file = Base.record_voice(duration=5, filename="voice_input.wav")
 
         # Transcribe using Whisper
         with open(voice_file, "rb") as audio_file:
-            transcription = client.audio.transcriptions.create(
+            transcription = config.client.audio.transcriptions.create(
                 model="whisper-1",
                 file=audio_file,
                 language=selected_language  # Specify the language for transcription
             )
-            text_query = transcription['text']
+            text_query = transcription.text
             print(text_query)
 
         # Pass transcription to GPT
-        response = client.chat.completions.create(
+        response = config.client.chat.completions.create(
             messages=[{"role": "user", "content": text_query}],
             model="gpt-4o"
         )
@@ -161,7 +110,7 @@ def add_product():
             return redirect(url_for('add_product'))
 
         # Add product to the database
-        conn = get_db_connection()
+        conn = base.get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
             "INSERT INTO products (name, description, price, image, category) VALUES (?, ?, ?, ?, ?)",
@@ -188,7 +137,7 @@ def save_product(product_id):
         price = float(data['price'].replace('$', ''))
         category = data['category']
 
-        conn = get_db_connection()
+        conn = base.get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
             "UPDATE products SET name = ?, description = ?, price = ?, category = ? WHERE id = ?",
@@ -208,7 +157,7 @@ def delete_product(product_id):
         return jsonify({'success': False, 'error': 'Access denied'}), 403
 
     try:
-        conn = get_db_connection()
+        conn = base.get_db_connection()
         cursor = conn.cursor()
         cursor.execute("DELETE FROM products WHERE id = ?", (product_id,))
         conn.commit()
@@ -231,22 +180,21 @@ def return_product():
         selected_language = request.form.get('language', 'en')
 
         # Record voice for 5 seconds
-        voice_file = record_voice(duration=5, filename="voice_input.wav")
-
+        voice_file = Base.record_voice(duration=5, filename="voice_input.wav")
         # Transcribe using Whisper with the selected language
         with open(voice_file, "rb") as audio_file:
-            transcription = client.audio.transcriptions.create(
+            transcription = config.client.audio.transcriptions.create(
                 model="whisper-1",
                 file=audio_file,
                 language=selected_language
             )
-            text_query = transcription['text']
+            text_query = transcription.text
             print(f"Raw transcription: {text_query}")
 
         cleaned_text_query = preprocess_text(text_query)
         print(f"Cleaned transcription: {cleaned_text_query}")
 
-        conn = get_db_connection()
+        conn = base.get_db_connection()
         cursor = conn.cursor()
         cursor.execute(
             """
@@ -276,7 +224,7 @@ def register():
 
         hashed_password = generate_password_hash(password)
 
-        conn = get_db_connection()
+        conn = base.get_db_connection()
         cursor = conn.cursor()
         try:
             cursor.execute("INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
@@ -298,7 +246,7 @@ def login():
         username = request.form['username']
         password = request.form['password']
 
-        conn = get_db_connection()
+        conn = base.get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT * FROM users WHERE username = ?", (username,))
         user = cursor.fetchone()
@@ -332,7 +280,7 @@ def admin_panel():
     search_query = request.form.get('search', '')
     category_filter = request.form.get('category', '')
 
-    conn = get_db_connection()
+    conn = base.get_db_connection()
     cursor = conn.cursor()
     if search_query:
         cursor.execute(
@@ -357,7 +305,7 @@ def search_products():
     price_range = request.args.get('price_range', '')
     selected_language = request.args.get('language', 'en')  # Capture the selected language
 
-    conn = get_db_connection()
+    conn = base.get_db_connection()
     conn.row_factory = sqlite3.Row  # This allows accessing columns by name
     cursor = conn.cursor()
 
@@ -397,7 +345,7 @@ def text_to_speech(response_text, output_file="response_audio.wav", language="en
 
     voice = language_voice_map.get(language, 'alloy')
 
-    with client.audio.speech.with_streaming_response.create(
+    with config.client.audio.speech.with_streaming_response.create(
             model="tts-1",
             voice=voice,
             input=response_text
@@ -411,7 +359,7 @@ def text_to_speech(response_text, output_file="response_audio.wav", language="en
 @app.route('/get_more_info/<int:product_id>', methods=['GET'])
 def get_more_info(product_id):
     try:
-        conn = get_db_connection()
+        conn = base.get_db_connection()
         cursor = conn.cursor()
         cursor.execute("SELECT name FROM products WHERE id = ?", (product_id,))
         product = cursor.fetchone()
@@ -420,7 +368,7 @@ def get_more_info(product_id):
         if product:
             # Generate additional information using GPT
             prompt = f"Tell me about this product in 20-30 words: {product['name']}"
-            response = client.chat.completions.create(
+            response = config.client.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
                 model="gpt-4o",
                 temperature=0
@@ -448,7 +396,7 @@ def load_more_products():
     items_per_page = 10
     offset = (page - 1) * items_per_page
 
-    conn = get_db_connection()
+    conn = base.get_db_connection()
     conn.row_factory = sqlite3.Row  # This allows accessing columns by name
     cursor = conn.cursor()
     cursor.execute("SELECT id, name, description, price, image, category FROM products LIMIT ? OFFSET ?", (items_per_page, offset))
@@ -478,8 +426,33 @@ def chat():
         session['chat_history'] = []
     return render_template('chat.html', chat_history=session['chat_history'])
 
+@app.route('/chat_voice', methods=['POST'])
+def chat_voice():
+    try:
+        # Process voice input and generate responses
+        voice_file = record_voice(duration=5, filename="voice_input.wav")
+        with open(voice_file, "rb") as audio_file:
+            transcription = client.audio.transcriptions.create(
+                model="whisper-1",
+                file=audio_file
+            )
+            user_message = transcription.text  # Capture user-transcribed message
+
+        response = client.chat.completions.create(
+            messages=[{"role": "user", "content": user_message}],
+            model="gpt-4o"
+        )
+        bot_message = response.choices[0].message.content
+
+        return jsonify({
+            'user_message': user_message,
+            'bot_message': bot_message
+        })
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 # Real-time chat communication via text
-@socketio.on('send_text_message')
+@config.socketio.on('send_text_message')
 def handle_text_message(data):
     try:
         user_message = data.get('message', '')
@@ -491,11 +464,11 @@ def handle_text_message(data):
         session['chat_history'].append({'role': 'user', 'content': user_message, 'timestamp': timestamp})
         session.modified = True  # Mark session as modified to save changes
 
-        # Emit user message to client immediately
+        # Emit user message to config.client immediately
         emit('receive_message', {'role': 'user', 'content': user_message, 'timestamp': timestamp}, broadcast=True)
 
         # Pass user message to GPT
-        response = client.chat.completions.create(
+        response = config.client.chat.completions.create(
             messages=[{'role': 'user', 'content': user_message}],
             model='gpt-4o'
         )
@@ -505,11 +478,12 @@ def handle_text_message(data):
         session['chat_history'].append({'role': 'bot', 'content': bot_message, 'timestamp': timestamp})
         session.modified = True  # Mark session as modified to save changes
 
-        # Emit bot response back to the client
+        # Emit bot response back to the config.client
         emit('receive_message', {'role': 'bot', 'content': bot_message, 'timestamp': timestamp}, broadcast=True)
     except Exception as e:
         emit('receive_message', {'role': 'error', 'content': f'Error: {str(e)}'}, broadcast=True)
 
+
 # Start Flask app
 if __name__ == '__main__':
-    socketio.run(app, host='127.0.0.1', port=5002, debug=True)
+    config.app_start()
