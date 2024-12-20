@@ -36,5 +36,5 @@ class Config:
         logging.basicConfig(filename='app.log', level=logging.DEBUG)
         os.makedirs(self.app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-    def app_start(self, host='127.0.0.1', port=5002, debug=False):
+    def app_start(self, host='0.0.0.0', port=5002, debug=False):
         self.socketio.run(self.app, host=host, port=port, debug=debug)
