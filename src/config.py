@@ -1,7 +1,5 @@
 import logging
 import os
-
-import psycopg2
 from flask import Flask
 from openai import OpenAI
 from flask_socketio import SocketIO

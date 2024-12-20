@@ -1,6 +1,5 @@
 import sqlite3
 import time
-import psycopg2
 import sounddevice as sd
 from scipy.io.wavfile import write
 

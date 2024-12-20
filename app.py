@@ -1,4 +1,7 @@
+import shutil
+
 import eventlet
+
 eventlet.monkey_patch()
 # import logging
 import os, sqlite3, time
@@ -9,12 +12,9 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from flask_socketio import emit
 from datetime import datetime
-
 from src.config import Config
 from src.base import Base
-import shutil
 import glob
-
 config = Config(app_name=__name__)
 base = Base(database="database.db")
 
@@ -94,6 +94,9 @@ def voice_input():
     if 'user_id' not in session:
         flash('Please login to perform this action.', 'error')
         return redirect(url_for('login'))
+
+    # Capture the selected language
+    selected_language = request.form.get('language', 'en')
 
     try:
         # Retrieve the uploaded audio file from the form
@@ -261,7 +264,6 @@ def delete_product(product_id):
         return jsonify({'success': False, 'error': 'Access denied'}), 403
 
     try:
-        # Establish DB connection and prepare cursor
         conn = base.get_db_connection()
         cursor = conn.cursor()
 
@@ -275,7 +277,6 @@ def delete_product(product_id):
         return jsonify({'success': True})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
-
 
 def preprocess_text(text):
     text = text.lower()
@@ -395,10 +396,8 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
-        print("Form submitted")  # Debugging
         username = request.form['username']
         password = request.form['password']
-        print(f"Username: {username}, Password: {password}")  # Debugging
 
         conn = base.get_db_connection()
         cursor = conn.cursor()
@@ -407,20 +406,16 @@ def login():
         conn.close()
 
         if user and check_password_hash(user[2], password):  # Assuming user[1] is the password
-            print("Login successful")  # Debugging
             session['user_id'] = user[0]  # Assuming user[0] is the user ID
             session['username'] = user[1]  # Assuming user[2] is the username
             session['role'] = user[3]  # Assuming user[3] is the role
             flash('Login successful!', 'success')
             return redirect(url_for('index'))
         else:
-            print("Invalid login attempt")  # Debugging
             flash('Invalid username or password', 'error')
             return redirect(url_for('login'))
 
     return render_template('login.html')
-
-
 
 @app.route('/logout')
 def logout():
@@ -439,12 +434,10 @@ def admin_panel():
     category_filter = request.form.get('category', '')
     new_category = request.form.get('new_category', None)
 
-    # Establish DB connection
     conn = base.get_db_connection()
     cursor = conn.cursor()
 
     if new_category:
-        # Add new category to the database
         cursor.execute("INSERT INTO categories (name) VALUES (?)", (new_category,))
         conn.commit()
         flash(f'New category "{new_category}" added successfully!', 'success')
@@ -456,9 +449,6 @@ def admin_panel():
     # Convert categories from tuples to dictionaries for easier access in the template
     categories_dict = [{'id': category[0], 'name': category[1]} for category in categories]
 
-    # Build the WHERE clause for category filtering
-    #category_condition = "AND categories.name LIKE %s" if category_filter else ""
-
     if search_query:
         cursor.execute(
             """
@@ -469,7 +459,6 @@ def admin_panel():
             """,
             (f"%{search_query}%", f"%{search_query}%")
         )
-
     else:
         cursor.execute(
             """
@@ -648,7 +637,6 @@ def load_more_products():
 
     return jsonify(products_json)
 
-
 @app.route('/chat', methods=['GET'])
 def chat():
     # Initialize chat history if not present
@@ -656,7 +644,6 @@ def chat():
         session['chat_history'] = []
     return render_template('chat.html', chat_history=session['chat_history'])
 
-# Chat voice route
 @app.route('/chat_voice', methods=['POST'])
 def chat_voice():
     try:
@@ -732,10 +719,8 @@ def chat_voice():
             'bot_message': bot_message,
             'bot_voice_url': f"/static/audio/{output_file}"
         })
-
     except Exception as e:
         return jsonify({'error': str(e)}), 500
-
 
 # Real-time chat communication via text
 @config.socketio.on('send_text_message')
@@ -750,7 +735,7 @@ def handle_text_message(data):
         session['chat_history'].append({'role': 'user', 'content': user_message, 'timestamp': timestamp})
         session.modified = True  # Mark session as modified to save changes
 
-        # Emit user message to client immediately
+        # Emit user message to config.client immediately
         emit('receive_message', {'role': 'user', 'content': user_message, 'timestamp': timestamp}, broadcast=True)
 
         pre_prompt = {
@@ -774,8 +759,8 @@ def handle_text_message(data):
             messages=[pre_prompt, user_message_payload],
             model="gpt-4o"
         )
-
         bot_message = response.choices[0].message.content
+
         # Save bot response to chat history
         session['chat_history'].append({'role': 'bot', 'content': bot_message, 'timestamp': timestamp})
         session.modified = True  # Mark session as modified to save changes
@@ -801,7 +786,6 @@ def handle_text_message(data):
         # Emit bot response back to the client
         emit('receive_message', bot_response, broadcast=True)
     except Exception as e:
-        # Emit error message to client
         emit('receive_message', {'role': 'error', 'content': f'Error: {str(e)}'}, broadcast=True)
 
 def cleanup_old_audio_files():
