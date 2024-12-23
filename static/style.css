@@ -6,7 +6,7 @@ body {
     line-height: 1.6;
     margin: 0;
     padding: 0;
-    background-color: #f5f5dc; /* Soft beige background */
+    background-color: #196fa3;
     color: #001f3f; /* Dark navy text */
     display: flex;
     flex-direction: column;
@@ -23,7 +23,7 @@ main {
 
 /* Header & Footer */
 header {
-    background: #87CEEB; /* Light blue */
+    background: #2c2a82; /* Light blue */
     color: #fff;
     padding: 1.5rem 0;
     text-align: center;
@@ -204,7 +204,7 @@ form button:hover, form button:focus {
 /* Voice Query Full-Width */
 .voice-query-fullwidth {
     width: 100%;
-    background: #f0f8ff;
+    background: #153677;
     border: 1px solid #5F9EA0;
     border-radius: 20px;
     padding: 2rem; /* More padding for breathing room */
@@ -215,7 +215,7 @@ form button:hover, form button:focus {
 
 .voice-query-fullwidth h2 {
     margin-top: 0;
-    color: #001f3f;
+    color: #d1b7e6;
     font-weight: 700;
 }
 /* Hide the recording indicator by default */
