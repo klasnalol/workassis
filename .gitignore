@@ -6,7 +6,7 @@
 
 # ignore venv files
 include/*
-lib*/*
+lib**
 bin/*
 pyvenv.cfg
 
