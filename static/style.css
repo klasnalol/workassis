@@ -22,21 +22,51 @@ main {
 }
 
 /* Header & Footer */
-header {
-    background: #87CEEB; /* Light blue */
-    color: #fff;
-    padding: 1.5rem 0;
-    text-align: center;
-    font-size: 2rem;
-    font-weight: 700; /* Use a heavier weight for more prominence */
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+/* General Reset for Consistency */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
+/* Header Styling Fix */
+header {
+    background: #87CEEB; /* Light blue */
+    color: #ffffff; /* White text for contrast */
+    padding: 1.5rem; /* Uniform padding */
+    text-align: center;
+    font-size: 2rem; /* Large and consistent font size */
+    font-weight: 700; /* Bold for prominence */
+    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for elevation */
+    border-radius: 0; /* Ensure no unintentional rounding */
+    transition: background-color 0.3s ease-in-out; /* Smooth transition for hover effects */
+}
+
+header:hover {
+    background-color: #5F9EA0; /* Slightly darker on hover */
+}
+
+/* Body Adjustments for Layout */
+body {
+    font-family: 'Nunito Sans', Arial, sans-serif;
+    font-size: 18px;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f5f5dc; /* Neutral background */
+    color: #001f3f; /* Dark text */
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    transition: background-color 0.5s ease-in-out;
+}
+
+/* Footer Consistency Fix */
 footer {
     text-align: center;
     padding: 1rem;
-    background: #87CEEB;
-    color: #fff;
+    background: #87CEEB; /* Same color as header */
+    color: #ffffff; /* Match header text color */
     margin-top: auto;
     box-shadow: 0px -4px 6px rgba(0, 0, 0, 0.1);
     border-radius: 20px 20px 0 0;
@@ -610,4 +640,160 @@ form button:hover, form button:focus {
 
 #floating-mic-btn:hover {
     background-color: #5F9EA0;
+}
+
+/* Container */
+.container-pr {
+    display: flex;
+    gap: 20px;
+    padding: 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Product Gallery */
+.product-gallery {
+    flex: 1;
+    text-align: center;
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-radius: 12px;
+}
+
+.product-gallery img {
+    max-width: 100%;
+    border-radius: 8px;
+    transition: transform 0.3s ease-in-out;
+}
+
+.product-gallery img:hover {
+    transform: scale(1.05);
+}
+
+/* Product Information */
+.product-info {
+    flex: 2;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* Title and Price */
+.product-title {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+}
+
+.product-price {
+    font-size: 20px;
+    font-weight: bold;
+    color: #e63946;
+}
+
+.product-description {
+    font-size: 16px;
+    line-height: 1.5;
+    color: #555;
+}
+
+/* Details */
+.details {
+    background-color: #f9f9f9;
+    padding: 10px;
+    border-radius: 8px;
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 10px;
+}
+
+.detail span:first-child {
+    font-weight: bold;
+    color: #333;
+}
+
+/* Tabs */
+.tabs {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    border-bottom: 2px solid #ddd;
+}
+
+.tab {
+    padding: 10px 20px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    color: #555;
+    border: 2px solid transparent;
+    border-radius: 6px 6px 0 0;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.tab:hover,
+.tab.active {
+    background-color: #e63946;
+    color: white;
+    border-color: #e63946;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.action-buttons a {
+    text-decoration: none;
+    text-align: center;
+    padding: 12px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    border-radius: 8px;
+    transition: background-color 0.3s ease-in-out;
+}
+
+.buy-now {
+    background-color: #e63946;
+}
+
+.buy-now:hover {
+    background-color: #b8323c;
+}
+
+.add-to-cart {
+    background-color: #457b9d;
+}
+
+.add-to-cart:hover {
+    background-color: #356482;
+}
+
+.back-button {
+    background-color: #2a9d8f;
+}
+
+.back-button:hover {
+    background-color: #217f72;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+
+    .product-info {
+        gap: 15px;
+    }
+
+    .details {
+        grid-template-columns: 1fr;
+    }
 }

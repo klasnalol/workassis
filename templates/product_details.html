@@ -3,23 +3,66 @@
 {% block title %}{{ product.name }}{% endblock %}
 
 {% block content %}
-<h1>{{ product.name }}</h1>
-<p><strong>Category:</strong> {{ product.category }}</p>
-<p><strong>Description:</strong> {{ product.description }}</p>
-<p><strong>Price:</strong> ${{ product.price }}</p>
+<div class="container-pr">
+    <!-- Product Gallery -->
+    <div class="product-gallery">
+        <img id="product-image" src="{{ product.image_url }}" alt="{{ product.name }}">
+    </div>
 
-<div class="product-image">
-    <img src="{{ product.image_url }}" alt="{{ product.name }}">
+    <!-- Product Information -->
+    <div class="product-info">
+        <div>
+            <div class="product-title">{{ product.name }}</div>
+            <div class="product-price">${{ product.price }}</div>
+            <div class="product-description">
+                <strong>Description:</strong> {{ product.description }}
+            </div>
+
+            <!-- Tabs -->
+            <div class="tabs">
+                <div class="tab active" onclick="openTab('overview')">Overview</div>
+                <div class="tab" onclick="openTab('specifications')">Specifications</div>
+                <div class="tab" onclick="openTab('reviews')">Reviews</div>
+            </div>
+
+            <!-- Tab Contents -->
+            <div id="overview" class="tab-content active">
+                <h2>Product Overview</h2>
+                <p><strong>Description:</strong> {{ product.description }}</p>
+                <p><strong>Category:</strong> {{ product.category }}</p>
+            </div>
+
+            <div id="specifications" class="tab-content">
+                <h2>Specifications</h2>
+                {% for detail in product.details %}
+                    <p><strong>{{ detail.key }}:</strong> {{ detail.value }}</p>
+                {% endfor %}
+            </div>
+
+            <div id="reviews" class="tab-content">
+                <h2>Reviews</h2>
+                <p>No reviews available yet.</p>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="action-buttons">
+            <a href="" class="buy-now">Buy Now</a> 
+            <a href="" class="add-to-cart">Add to Cart</a>
+            <a href="{{ url_for('index') }}" class="back-button">Back to Home</a>
+        </div>
+    </div>
 </div>
 
-<h3>Additional Details:</h3>
-<ul>
-    {% for detail in product.details %}
-        <li><strong>{{ detail.key }}:</strong> {{ detail.value }}</li>
-    {% else %}
-        <p>No additional details available.</p>
-    {% endfor %}
-</ul>
+<script>
+    function openTab(tabId) {
+        const tabs = document.querySelectorAll('.tab-content');
+        tabs.forEach(tab => tab.classList.remove('active'));
+        document.querySelector(`#${tabId}`).classList.add('active');
 
-<a href="{{ url_for('index') }}" class="back-button">Back to Home</a>
+        const tabButtons = document.querySelectorAll('.tab');
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        document.querySelector(`[onclick="openTab('${tabId}')"]`).classList.add('active');
+    }
+</script>
 {% endblock %}
