@@ -4,14 +4,20 @@
 
 {% block content %}
 <section>
-    <a href="{{ url_for('index') }}">Main Page</a>
-    <h2>Login</h2>
+    <a href="{{ url_for('index') }}">{{ translations['main_page'] }}</a>
+    <h2>{{ translations['login_title'] }}</h2>
     <form action="{{ url_for('login') }}" method="post">
-        <label>Username:</label>
+        <label>{{ translations['username_label'] }}</label>
         <input type="text" name="username" required><br><br>
-        <label>Password:</label>
+        <label>{{ translations['password_label'] }}</label>
         <input type="password" name="password" required><br><br>
-        <button type="submit">Login</button>
+        <button type="submit">{{ translations['login_button'] }}</button>
     </form>
 </section>
+
+<script>
+    document.querySelector('form').addEventListener('submit', (e) => {
+        console.log("Form submitted!");
+    });
+</script>
 {% endblock %}

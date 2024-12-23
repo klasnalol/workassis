@@ -4,37 +4,57 @@
 
 {% block content %}
 <section>
-    <h2>Admin Panel</h2>
-    <a href="{{ url_for('add_product') }}">Add a New Product</a><br><br>
+    <h2>{{ translations['admin_panel_heading'] }}</h2>
+    <form action="{{ url_for('admin_panel') }}" method="post">
+        <input type="text" name="new_category" placeholder="{{ translations['new_category_placeholder'] }}" required>
+        <button type="submit">{{ translations['add_category_button'] }}</button>
+    </form>
+    <a href="{{ url_for('add_product') }}">{{ translations['add_product_link'] }}</a><br><br>
     <form method="POST" action="{{ url_for('admin_panel') }}">
-        <input type="text" name="search" placeholder="Search products by name, description, or price..." value="{{ search_query }}">
-        <button type="submit">Search</button>
+        <input type="text" name="search" placeholder="{{ translations['search_placeholder'] }}" value="{{ search_query }}">
+        <button type="submit">{{ translations['search_button'] }}</button>
     </form>
     <br>
     <table border="1" style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Name</th>
-                <th>Description</th>
-                <th>Price</th>
-                <th>Image</th>
-                <th>Actions</th>
+                <th>{{ translations['id'] }}</th>
+                <th>{{ translations['name'] }}</th>
+                <th>{{ translations['category'] }}</th>
+                <th>{{ translations['description'] }}</th>
+                <th>{{ translations['price'] }}</th>
+                <th>{{ translations['image'] }}</th>
+                <th>{{ translations['actions'] }}</th>
             </tr>
         </thead>
         <tbody>
             {% for product in products %}
             <tr>
                 <td>{{ product['id'] }}</td>
-                <td><input type="text" value="{{ product['name'] }}" name="name_{{ product['id'] }}" id="name_{{ product['id'] }}"></td>
-                <td><textarea name="description_{{ product['id'] }}" id="description_{{ product['id'] }}">{{ product['description'] }}</textarea></td>
-                <td><input type="text" value="{{ product['price'] }}" name="price_{{ product['id'] }}" id="price_{{ product['id'] }}"></td>
                 <td>
-                    <img src="{{ url_for('static', filename='uploads/' + product['image']) }}" alt="{{ product['name'] }}" style="max-width: 100px;">
+                    <input type="text" value="{{ product['name'] }}" name="name_{{ product['id'] }}" id="name_{{ product['id'] }}">
                 </td>
                 <td>
-                    <button onclick="saveProduct({{ product['id'] }})">Save</button>
-                    <button onclick="deleteProduct({{ product['id'] }})">Delete</button>
+                    <select name="category_{{ product['id'] }}" id="category_{{ product['id'] }}">
+                        {% for category in categories %}
+                        <option value="{{ category['id'] }}" {% if category['id'] == product['category_id'] %}selected{% endif %}>
+                            {{ category['name'] }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </td>
+                <td>
+                    <textarea name="description_{{ product['id'] }}" id="description_{{ product['id'] }}">{{ product['description'] }}</textarea>
+                </td>
+                <td>
+                    <input type="text" value="{{ product['price'] }}" name="price_{{ product['id'] }}" id="price_{{ product['id'] }}">
+                </td>
+                <td>
+                    <img src="{{ product.image }}" alt="{{ product['name'] }}" style="max-width: 100px;">
+                </td>
+                <td>
+                    <button onclick="saveProduct({{ product['id'] }})">{{ translations['save_button'] }}</button>
+                    <button onclick="deleteProduct({{ product['id'] }})">{{ translations['delete_button'] }}</button>
                 </td>
             </tr>
             {% endfor %}
@@ -42,18 +62,20 @@
     </table>
 </section>
 
+
 <script>
     function saveProduct(productId) {
         const name = document.getElementById(`name_${productId}`).value;
         const description = document.getElementById(`description_${productId}`).value;
         const price = document.getElementById(`price_${productId}`).value;
+        const categoryId = document.getElementById(`category_${productId}`).value;  // Get category ID
 
         fetch(`/save_product/${productId}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
             },
-            body: JSON.stringify({ name, description, price }),
+            body: JSON.stringify({ name, description, price, category: categoryId }), // Send category ID instead of name
         })
         .then(response => response.json())
         .then(data => {
@@ -68,6 +90,8 @@
             alert('An error occurred while saving the product.');
         });
     }
+
+
 
     function deleteProduct(productId) {
         if (confirm('Are you sure you want to delete this product?')) {
