@@ -16,7 +16,7 @@ from src.config import Config
 from src.base import Base
 import glob
 config = Config(app_name=__name__)
-base = Base(database="database.db")
+base = Base(database="database1.db")
 
 # Call this function to ensure the table exists
 base.ensure_table_exists()
@@ -94,9 +94,6 @@ def voice_input():
     if 'user_id' not in session:
         flash('Please login to perform this action.', 'error')
         return redirect(url_for('login'))
-
-    # Capture the selected language
-    selected_language = request.form.get('language', 'en')
 
     try:
         # Retrieve the uploaded audio file from the form
@@ -794,6 +791,54 @@ def cleanup_old_audio_files():
     for file_path in glob.glob(os.path.join(static_audio_path, "response_audio_*.wav")):
         if os.path.getmtime(file_path) < cutoff_time:
             os.remove(file_path)
+
+@app.route('/product/<int:product_id>')
+def product_details(product_id):
+    conn = base.get_db_connection()
+    cursor = conn.cursor()
+
+    # Fetch product data
+    cursor.execute("""
+        SELECT 
+            products.id, 
+            products.name, 
+            products.description, 
+            products.price, 
+            products.image, 
+            categories.name AS category_name
+        FROM 
+            products
+        JOIN 
+            categories ON products.category_id = categories.id
+        WHERE 
+            products.id = ?
+    """, (product_id,))
+    product = cursor.fetchone()
+
+    if not product:
+        return render_template('product_not_found.html', product_id=product_id)
+
+    # Fetch additional product details
+    cursor.execute("""
+        SELECT key, value 
+        FROM product_details 
+        WHERE product_id = ?
+    """, (product_id,))
+    details = [{"key": detail[0], "value": detail[1]} for detail in cursor.fetchall()]
+    conn.close()
+
+    # Prepare product data for template
+    product_data = {
+        "id": product[0],
+        "name": product[1],
+        "description": product[2],
+        "price": product[3],
+        "image_url": f"/static/uploads/{product[4]}" if product[4] else "/static/images/default.png",
+        "category": product[5],
+        "details": details,
+    }
+
+    return render_template('product_details.html', product=product_data)
 
 # Start Flask app
 if __name__ == '__main__':
