@@ -19,7 +19,7 @@ from src.base import Base
 # import routes
 
 
-config = Config(app_name=__name__, database="database1.db", host="0.0.0.0", port=5002, debug=True)
+config = Config(app_name=__name__, database_url="database1.db", host="0.0.0.0", port=5002, debug=True)
 base = Base(database = config.database)
 
 # Call this function to ensure the table exists
