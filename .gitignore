@@ -11,7 +11,7 @@ bin/*
 pyvenv.cfg
 
 # Python cache files
-**/__pycache__/
+**/__pycache__/**
 **.pyc
 
 # ignore logs
