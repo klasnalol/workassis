@@ -1,22 +1,30 @@
 import shutil
-
 import eventlet
-
 eventlet.monkey_patch()
-# import logging
 import os, sqlite3, time
+import json
+import glob
 from flask import request, render_template, redirect, g, url_for, flash, session, jsonify
 from flask_babel import Babel
-import json
+from flask_socketio import emit
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
-from flask_socketio import emit
 from datetime import datetime
 from src.config import Config
-from src.base import Base
-import glob
-config = Config(app_name=__name__)
-base = Base(database="database1.db")
+from src.base import Base 
+
+# import routes
+
+
+config = Config(
+        app_name=__name__,
+        database_url="database1.db",
+        host="0.0.0.0",
+        port=5002,
+        debug=True
+)
+
+base = Base(database=config.database)
 
 # Call this function to ensure the table exists
 base.ensure_table_exists()
@@ -28,8 +36,10 @@ babel = Babel(app)
 # Allowed audio extensions
 ALLOWED_EXTENSIONS = {'wav', 'webm', 'mp3'}
 
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 
 translations = {
     'en': 'translations/en.json',
@@ -37,21 +47,25 @@ translations = {
     'kz': 'translations/kz.json'
 }
 
+
 def load_translations(language):
     # Load translations for the given language
     with open(translations.get(language, 'translations/en.json'), 'r', encoding='utf-8') as f:
         return json.load(f)
+
 
 @app.before_request
 def before_request():
     # Set the current language based on user selection or default to 'en'
     g.lang = request.args.get('lang', 'ru')  # Default to 'en'
 
+
 @app.context_processor
 def inject_translations():
     # Load translations based on the current language
     current_translations = load_translations(g.lang)
     return {'translations': current_translations}
+
 
 # Home route
 @app.route('/')
@@ -843,4 +857,5 @@ def product_details(product_id):
 
 # Start Flask app
 if __name__ == '__main__':
-    config.socketio.run(app, host='127.0.0.1', port=5002, debug=True)
+    config.app_start()
+
