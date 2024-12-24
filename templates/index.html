@@ -1,135 +1,136 @@
 {% extends 'base.html' %}
 
-{% block title %}Home - Product Query App{% endblock %}
+{% block title %}{{ translations['welcome'] }}{% endblock %}
 
 {% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-pZw+V4F2Z+1kZxGLQGq4HvO8+FvH9sE98VvNJUqkN3Z3eTTcSyYB+eJLjEJjV+F5LZX2x3Q8NhgVYxXhZtC1BA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<section>
-    <h2>Admin Panel</h2>
-    {% if 'user_id' in session and session['role'] == 'admin' %}
-        <a href="{{ url_for('admin_panel') }}">Go to Admin Panel</a>
-    {% endif %}
-</section>
-{% if 'user_id' in session and session['role'] == 'admin' %}
-<section>
-    <h2>Add a New Product</h2>
-    <a href="{{ url_for('add_product') }}">Add a Product</a>
-</section>
-{% endif %}
-<section class="query-section">
-    <div class="voice-query">
-        <h2>Submit a Voice Query</h2>
-        <form action="/voice_input" method="post">
-            <button type="submit">Record Voice Query (5 seconds)</button>
+<main>
+    <!-- Video Overlay -->
+    <div id="video-overlay">
+        <button id="close-video-btn">&times;</button>
+        <video id="idle-video" src="/static/video/a.mp4" autoplay muted loop></video>
+    </div>
+
+    <!-- Voice Query Full Width -->
+    <section class="voice-query-fullwidth">
+        <h2>{{ translations['search_voice'] }}</h2>
+        <!-- Updated form for /voice_input -->
+        <form id="voice-input-form" action="/voice_input" method="post" enctype="multipart/form-data" style="display: none">
+            <label for="mic-select-voice">{{ translations['microphone'] }}:</label>
+            <select id="mic-select-voice"></select>
+            <button type="button" id="start-record-btn-voice" class="full-width-btn">{{ translations['start_recording'] }}</button>
+            <button type="button" id="stop-record-btn-voice" class="full-width-btn" disabled>Stop Recording</button>
         </form>
-        <form action="/return_product" method="post">
-            <label for="language">Select Language:</label>
-            <select id="language" name="language">
-                <option value="ru">Русский</option>
-                <option value="kz">Қазақша</option>
-                <option value="en">English</option>
+
+        <!-- Updated form for /return_product -->
+        <form id="return-product-form" action="/return_product" method="post" enctype="multipart/form-data">
+            <label for="mic-select-return">{{ translations['microphone'] }}:</label>
+            <select id="mic-select-return"></select>
+            <button type="button" id="start-record-btn-return" class="full-width-btn">{{ translations['start_recording'] }}</button>
+            <button type="button" id="stop-record-btn-return" class="full-width-btn" disabled style="display: none">Stop Recording</button>
+            <!-- Recording Animation -->
+            <div id="recording-animation" class="recording-animation d-none mb-2">
+                <div class="mic-icon">
+                    <i class="fas fa-microphone-alt fa-2x"></i>
+                </div>
+                <div class="pulse"></div>
+            </div>
+        </form>
+    </section>
+    <!-- Button to Open Search Sidebar -->
+    <div class="open-search-btn-container">
+        <button id="open-search-sidebar" class="btn-open-search">{{ translations['search'] }}</button>
+    </div>
+
+    <!-- Product List with Infinite Scrolling -->
+    <section id="product-list">
+        <h2>{{ translations['product_list'] }}</h2>
+        <div id="products-container" class="products-grid">
+            {% for product in products %}
+                <div class="product-item">
+                    <div class="product-image">
+                        <img src="{{ product.image_url }}" alt="{{ product.name }}" />
+                    </div>
+                    <button class="details-toggle" onclick="toggleDetails(this)">{{ translations['more_info'] }}</button>
+                    <div class="product-details">
+                        <button type="button" class="less-info-btn" onclick="closeDetails(this)">{{ translations['less_info'] }}</button>
+                        <h3>{{ product.name }}</h3>
+                        <p>{{ product.description }}</p>
+                        <p>Price: ₸{{ product.price }}</p>
+                        <p>Category: {{ product.category }}</p>
+                    </div>
+                </div>
+            {% else %}
+                <p>{{ translations['no_products'] }}</p>
+            {% endfor %}
+        </div>
+    </section>
+
+</main>
+
+<!-- Floating Mic Button -->
+<button id="floating-mic-btn">
+    <img src="/static/images/mic.png" alt="Microphone" style="width:60px;height:60px;">
+</button>
+
+<!-- Search Sidebar -->
+<div id="search-sidebar" class="search-sidebar">
+    <button class="close-sidebar-btn" id="close-search-sidebar">X</button>
+    <h2>{{ translations['search'] }}</h2>
+    <form id="search-form" action="/search" method="get">
+        <input type="text" id="query-input" name="query" placeholder="Search products..." required>
+        <button type="button" id="keyboard-btn">{{ translations['open_keyboard'] }}</button>
+        <label>
+            <select name="category">
+                <option value="">{{ translations['all_categories'] }}</option>
+                {% for cat in categories %}
+                    <option value="{{ cat }}">{{ cat|capitalize }}</option>
+                {% endfor %}
             </select>
-            <button type="submit">Return product (5 seconds)</button>
-        </form>
-    </div>
+        </label>
 
-    <div class="search-query">
-        <h2>Search Products</h2>
-        <form id="search-form" action="/search" method="get">
-            <label for="query-input"></label><input type="text" id="query-input" name="query" placeholder="Search products..." required>
-            <button type="button" id="keyboard-btn">Open Keyboard</button>
-            <div id="keyboard-container" class="onscreen-keyboard" style="display: none;">
-                <!-- Remove inline style from the button -->
-                <button type="button" id="close-keyboard" onclick="closeKeyboard()">X</button>
-                <div id="keyboard">
-                    <!-- Keys will be dynamically generated -->
-                </div>
-            </div>
-            <label>
-                <select name="category">
-                    <option value="">All Categories</option>
-                    <option value="electronics">Electronics</option>
-                    <option value="fashion">Fashion</option>
-                    <option value="home">Home</option>
-                </select>
-            </label>
-            <label>
-                <select name="price_range">
-                    <option value="">All Prices</option>
-                    <option value="low">Under $50</option>
-                    <option value="medium">$50 - $200</option>
-                    <option value="high">Above $200</option>
-                </select>
-            </label>
-            <button type="submit" id="submit-search">Search</button>
-        </form>
-    </div>
-</section>
+        <label>
+            <select name="price_range">
+                <option value="">{{ translations['all_prices'] }}</option>
+                <option value="low">{{ translations['low_price'] }}</option>
+                <option value="medium">{{ translations['medium_price'] }}</option>
+                <option value="high">{{ translations['high_price'] }}</option>
+            </select>
+        </label>
+        <button type="submit" id="submit-search">{{ translations['search_button'] }}</button>
+    </form>
+</div>
 
-<section id="product-list">
-    <h2>Product List</h2>
-    <div id="products-container" class="products-grid">
-        {% for product in products %}
-            <div class="product-item">
-                <div class="product-image">
-                    <img src="{{ product.image_url }}" alt="{{ product.name }}" />
-                </div>
-                <button class="details-toggle" onclick="toggleDetails(this)">More Info</button>
-                <div class="product-details" style="display: none;">
-                    <h3>{{ product.name }}</h3>
-                    <p>{{ product.description }}</p>
-                    <p>Price: ${{ product.price }}</p>
-                    <p>Category: {{ product.category }}</p>
-                </div>
-            </div>
-        {% else %}
-            <p>No products available.</p>
-        {% endfor %}
+<!-- Keyboard Container -->
+<div id="keyboard-container" class="onscreen-keyboard">
+    <div class="keyboard-overlay" onclick="closeKeyboard()"></div>
+    <div class="keyboard-content">
+        <button type="button" id="close-keyboard" onclick="closeKeyboard()">X</button>
+        <div id="keyboard"><!-- Keys generated by JS --></div>
     </div>
-</section>
+</div>
 
 <script>
-    // Event listener to save selected language
-    document.getElementById('language').addEventListener('change', function () {
-        const selectedLanguage = this.value;
-        // Store the selected language in localStorage
-        localStorage.setItem('selectedLanguage', selectedLanguage);
+    // Sidebar logic
+    const openSearchBtn = document.getElementById('open-search-sidebar');
+    const closeSearchBtn = document.getElementById('close-search-sidebar');
+    const searchSidebar = document.getElementById('search-sidebar');
+
+    openSearchBtn.addEventListener('click', () => {
+        searchSidebar.classList.add('open');
     });
 
-    // On page load, set the dropdown to the saved language
-    document.addEventListener('DOMContentLoaded', function () {
-        const savedLanguage = localStorage.getItem('selectedLanguage');
-        if (savedLanguage) {
-            document.getElementById('language').value = savedLanguage;
-        }
+    closeSearchBtn.addEventListener('click', () => {
+        searchSidebar.classList.remove('open');
     });
 
-    // Function to attach the selected language to forms before submission
-    function attachLanguageToForms() {
-        const language = localStorage.getItem('selectedLanguage') || 'en';
-        // Append a hidden input for language to each form
-        document.querySelectorAll('form').forEach(form => {
-            if (!form.querySelector('input[name="language"]')) {
-                const languageInput = document.createElement('input');
-                languageInput.type = 'hidden';
-                languageInput.name = 'language';
-                languageInput.value = language;
-                form.appendChild(languageInput);
-            }
-        });
-    }
-
-    // Attach language to forms on submission
-    document.querySelectorAll('form').forEach(form => {
-        form.addEventListener('submit', attachLanguageToForms);
-    });
-
-
-    let page = 2; // Start from page 2 since page 1 is already loaded
+    // Infinite Scrolling
+    let page = 2;
     let isLoading = false;
-    let isUppercase = false;
 
-    // Infinite scrolling
     window.addEventListener('scroll', () => {
         if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 100 && !isLoading) {
             loadMoreProducts();
@@ -143,10 +144,12 @@
             if (!response.ok) throw new Error('Failed to fetch products.');
 
             const products = await response.json();
+
+            if (products.length === 0) {
+                return;
+            }
+
             const container = document.getElementById('products-container');
-
-            if (products.length === 0) return;
-
             products.forEach(product => {
                 const productDiv = document.createElement('div');
                 productDiv.className = 'product-item';
@@ -154,8 +157,9 @@
                     <div class="product-image">
                         <img src="${product.image_url}" alt="${product.name}" />
                     </div>
-                    <button class="details-toggle" onclick="toggleDetails(this)">More Info</button>
-                    <div class="product-details" style="display: none;">
+                    <button class="details-toggle" onclick="toggleDetails(this)">{{ translations['more_info'] }}</button>
+                    <div class="product-details">
+                        <button type="button" class="less-info-btn" onclick="closeDetails(this)">{{ translations['less_info'] }}</button>
                         <h3>${product.name}</h3>
                         <p>${product.description}</p>
                         <p>Price: $${product.price}</p>
@@ -173,18 +177,29 @@
         }
     }
 
+    // Toggle Product Details with More Info button
     function toggleDetails(button) {
         const details = button.nextElementSibling;
-        details.style.display = details.style.display === 'none' ? 'block' : 'none';
-        button.textContent = details.style.display === 'block' ? 'Less Info' : 'More Info';
+        const isOpen = details.classList.toggle('open');
+        button.textContent = isOpen ? 'Less Info' : 'More Info';
     }
 
-    // Onscreen keyboard logic
+    // Close Product Details with Less Info button
+    function closeDetails(btn) {
+        const details = btn.closest('.product-details');
+        const item = details.closest('.product-item');
+        const toggleBtn = item.querySelector('.details-toggle');
+        details.classList.remove('open');
+        toggleBtn.textContent = 'More Info';
+    }
+
+    // On-Screen Keyboard Logic
     document.addEventListener('DOMContentLoaded', () => {
         const keyboardContainer = document.getElementById('keyboard-container');
         const keyboard = document.getElementById('keyboard');
         const inputField = document.getElementById('query-input');
         const submitSearch = document.getElementById('submit-search');
+        let isUppercase = false;
 
         const rows = [
             ['q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p'],
@@ -194,50 +209,48 @@
         ];
 
         // Generate keyboard rows
-        rows.forEach((row) => {
+        rows.forEach(row => {
             const rowDiv = document.createElement('div');
             rowDiv.className = 'keyboard-row';
 
             row.forEach(char => {
                 const key = document.createElement('button');
-                key.type = 'button'; // Prevent form submission
-                key.textContent = char === 'Space' ? 'Space' : char;
+                key.type = 'button';
+                key.textContent = (char === 'Space') ? 'Space' : char;
                 key.className = `keyboard-key ${['⌫', '⇧', 'Space', 'Enter'].includes(char) ? 'special-key' : ''}`;
 
                 if (char === '⌫') {
                     key.onclick = () => {
-                        inputField.value = inputField.value.slice(0, -1); // Backspace
+                        inputField.value = inputField.value.slice(0, -1);
                     };
                 } else if (char === '⇧') {
                     key.onclick = () => toggleUppercase();
                 } else if (char === 'Space') {
                     key.onclick = () => {
-                        inputField.value += ' '; // Add space
+                        inputField.value += ' ';
                     };
                     key.classList.add('space-bar');
                 } else if (char === 'Enter') {
                     key.onclick = () => {
                         if (inputField.value.trim() !== '') {
-                            submitSearch.click(); // Trigger search
+                            submitSearch.click();
                         }
                     };
                 } else {
                     key.onclick = () => {
-                        inputField.value += isUppercase ? char.toUpperCase() : char.toLowerCase(); // Add character
+                        inputField.value += isUppercase ? char.toUpperCase() : char.toLowerCase();
                     };
                 }
+
                 rowDiv.appendChild(key);
             });
-
             keyboard.appendChild(rowDiv);
         });
 
-        // Show keyboard
         document.getElementById('keyboard-btn').addEventListener('click', () => {
             keyboardContainer.style.display = 'flex';
         });
 
-        // Close keyboard
         window.closeKeyboard = () => {
             keyboardContainer.style.display = 'none';
         };
@@ -246,12 +259,175 @@
             isUppercase = !isUppercase;
             const keys = document.querySelectorAll('.keyboard-key:not(.special-key)');
             keys.forEach(key => {
-                key.textContent = isUppercase
-                    ? key.textContent.toUpperCase()
-                    : key.textContent.toLowerCase();
+                if (key.textContent !== 'Space') {
+                    key.textContent = isUppercase
+                        ? key.textContent.toUpperCase()
+                        : key.textContent.toLowerCase();
+                }
             });
         }
     });
 </script>
 
+<script>
+    let mediaRecorderVoice, mediaRecorderReturn;
+    let recordedChunksVoice = [];
+    let recordedChunksReturn = [];
+
+    const micSelectVoice = document.getElementById('mic-select-voice');
+    const micSelectReturn = document.getElementById('mic-select-return');
+    const startBtnVoice = document.getElementById('start-record-btn-voice');
+    const stopBtnVoice = document.getElementById('stop-record-btn-voice');
+    const startBtnReturn = document.getElementById('start-record-btn-return');
+    const stopBtnReturn = document.getElementById('stop-record-btn-return');
+    const formVoice = document.getElementById('voice-input-form');
+    const formReturn = document.getElementById('return-product-form');
+    const floatingMicBtn = document.getElementById('floating-mic-btn');
+
+    async function populateMicrophones() {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const audioInputs = devices.filter(d => d.kind === 'audioinput');
+
+        micSelectVoice.innerHTML = '';
+        micSelectReturn.innerHTML = '';
+
+        audioInputs.forEach((device, index) => {
+            const optionV = document.createElement('option');
+            optionV.value = device.deviceId;
+            optionV.textContent = device.label || `Microphone ${index + 1}`;
+            micSelectVoice.appendChild(optionV);
+
+            const optionR = document.createElement('option');
+            optionR.value = device.deviceId;
+            optionR.textContent = device.label || `Microphone ${index + 1}`;
+            micSelectReturn.appendChild(optionR);
+        });
+    }
+
+    // Populate microphones on load
+    populateMicrophones();
+
+    // Existing voice_input logic
+    startBtnVoice.addEventListener('click', async () => {
+        recordedChunksVoice = [];
+        const deviceId = micSelectVoice.value;
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId ? { exact: deviceId } : undefined } });
+        mediaRecorderVoice = new MediaRecorder(stream);
+
+        mediaRecorderVoice.ondataavailable = (event) => {
+            recordedChunksVoice.push(event.data);
+        };
+
+        mediaRecorderVoice.onstop = async () => {
+            const audioBlob = new Blob(recordedChunksVoice, { type: 'audio/webm' });
+            const formData = new FormData(formVoice);
+            formData.append('audio_file', audioBlob, 'voice_input.webm');
+            try {
+                const response = await fetch(formVoice.action, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    const resultHtml = await response.text();
+                    document.open();
+                    document.write(resultHtml);
+                    document.close();
+                } else {
+                    console.error('Failed to submit audio.');
+                    alert('Failed to submit audio. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error submitting audio:', error);
+                alert('Error submitting audio. Please try again.');
+            }
+        };
+
+        mediaRecorderVoice.start();
+        startBtnVoice.disabled = true;
+        stopBtnVoice.disabled = false;
+
+        // Automatically stop after 5 seconds
+        setTimeout(() => {
+            if (mediaRecorderVoice && mediaRecorderVoice.state !== 'inactive') {
+                mediaRecorderVoice.stop();
+                startBtnVoice.disabled = false;
+                stopBtnVoice.disabled = true;
+            }
+        }, 5000);
+    });
+
+    stopBtnVoice.addEventListener('click', () => {
+        if (mediaRecorderVoice && mediaRecorderVoice.state !== 'inactive') {
+            mediaRecorderVoice.stop();
+            startBtnVoice.disabled = false;
+            stopBtnVoice.disabled = true;
+        }
+    });
+
+    
+    // For return_product
+    startBtnReturn.addEventListener('click', async () => {
+        recordedChunksReturn = [];
+        const deviceId = micSelectReturn.value;
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId ? { exact: deviceId } : undefined } });
+        mediaRecorderReturn = new MediaRecorder(stream);
+
+        mediaRecorderReturn.ondataavailable = (event) => {
+            recordedChunksReturn.push(event.data);
+        };
+
+        mediaRecorderReturn.onstop = async () => {
+            const audioBlob = new Blob(recordedChunksReturn, { type: 'audio/webm' });
+            const formData = new FormData(formReturn);
+            formData.append('audio_file', audioBlob, 'voice_input.webm');
+            try {
+                const response = await fetch(formReturn.action, {
+                    method: 'POST',
+                    body: formData
+                });
+                if (response.ok) {
+                    const resultHtml = await response.text();
+                    document.open();
+                    document.write(resultHtml);
+                    document.close();
+                } else {
+                    console.error('Failed to submit audio.');
+                }
+            } catch (error) {
+                console.error('Error submitting audio:', error);
+                alert('Error submitting audio. Please try again.');
+            }
+            hideRecordingAnimation();
+        };
+        showRecordingAnimation();
+        mediaRecorderReturn.start();
+        startBtnReturn.disabled = true;
+        stopBtnReturn.disabled = false;
+
+        // Automatically stop after 5 seconds
+        setTimeout(() => {
+            if (mediaRecorderReturn && mediaRecorderReturn.state !== 'inactive') {
+                mediaRecorderReturn.stop();
+                startBtnReturn.disabled = false;
+                stopBtnReturn.disabled = true;
+            }
+        }, 5000);
+    });
+
+    stopBtnReturn.addEventListener('click', () => {
+        if (mediaRecorderReturn && mediaRecorderReturn.state !== 'inactive') {
+            mediaRecorderReturn.stop();
+            startBtnReturn.disabled = false;
+            stopBtnReturn.disabled = true;
+        }
+    });
+
+    function showRecordingAnimation() {
+        $('#recording-animation').removeClass('d-none');
+    }
+
+    function hideRecordingAnimation() {
+        $('#recording-animation').addClass('d-none');
+    }
+</script>
 {% endblock %}

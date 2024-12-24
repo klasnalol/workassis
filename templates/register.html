@@ -4,15 +4,15 @@
 
 {% block content %}
 <section>
-    <a href="{{ url_for('index') }}">Main Page</a>
-    <h2>Register</h2>
+    <a href="{{ url_for('index') }}">{{ translations['main_page'] }}</a>
+    <h2>{{ translations['register'] }}</h2>
     <form action="{{ url_for('register') }}" method="post">
-        <label>Username:</label>
+        <label>{{ translations['username'] }}</label>
         <input type="text" name="username" required><br><br>
-        <label>Password:</label>
+        <label>{{ translations['password'] }}</label>
         <input type="password" name="password" required>
         <br>
-        <button type="submit">Register</button>
+        <button type="submit">{{ translations['register_button'] }}</button>
     </form>
 </section>
 {% endblock %}

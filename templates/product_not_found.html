@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 
-{% block title %}Product Not Found - Product Query App{% endblock %}
+{% block title %}{{ translations['product_not_found'] }} - Product Query App{% endblock %}
 
 {% block content %}
 <section>
-    <h2>Product Not Found</h2>
-    <p>Sorry, we couldn't find any product matching your query: <strong>{{ query }}</strong></p>
-    <a href="{{ url_for('index') }}">Try Again</a>
+    <h2>{{ translations['product_not_found'] }}</h2>
+    <p>{{ translations['sorry_no_product_found'] }} <strong>{{ query }}</strong></p>
+    <a href="{{ url_for('index') }}">{{ translations['try_again'] }}</a>
 </section>
 {% endblock %}

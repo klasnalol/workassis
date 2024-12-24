@@ -4,10 +4,9 @@
 
 {% block content %}
 <section>
-    <h2>Query Result</h2>
-    <p><strong>Your Query:</strong> {{ query }}</p>
-    <p><strong>GPT answer: </strong>{{ response }}</p>
-    <h3>Suggested Products</h3>
+    <h2>{{ translations['query_result'] }}</h2>
+    <p><strong>{{ translations['your_query'] }}</strong> {{ query }}</p>
+    <h3>{{ translations['products'] }}</h3>
     {% if products and products|length > 0 %}
         <div class="products-grid">
             {% for product in products %}
@@ -18,9 +17,9 @@
                         {% endif %}
                     </div>
                     <h4>{{ product['name'] }}</h4>
-                    <p>Price: ${{ product['price'] }}</p>
-                    <p>Category: {{ product['category'] }}</p>
-                    <button class="details-toggle" onclick="fetchMoreInfo({{ product['id'] }})">More Info</button>
+                    <p>{{ translations['price'] }} ₸ {{ product['price'] }}</p>
+                    <p>{{ translations['category'] }}: {{ product['category'] }}</p>
+                    <button class="details-toggle" onclick="fetchMoreInfo({{ product['id'] }})">{{ translations['more_info'] }}</button>
                     <div id="product-details-{{ product['id'] }}" class="product-details" style="display: none;">
                         <p id="additional-info-{{ product['id'] }}"></p>
                     </div>
@@ -28,9 +27,9 @@
             {% endfor %}
         </div>
     {% else %}
-        <p>No products found matching your query.</p>
+        <p>{{ translations['no_products_found'] }}</p>
     {% endif %}
-    <a href="{{ url_for('index') }}">Go back to Home</a>
+    <a href="{{ url_for('index') }}">{{ translations['go_back_home'] }}</a>
 </section>
 
 <script>

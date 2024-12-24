@@ -41,13 +41,12 @@ class Base:
         conn.close()
     # Voice recording function
     @staticmethod
-    def record_voice(duration=5, filename: str = "voice_input.wav") -> str:
+    def record_voice(duration=5, filename="voice_input.wav"):
         """Record audio for a given duration and save to a file."""
         fs = 44100  # Sample rate
         print("Recording...")
         recording = sd.rec(int(duration * fs), samplerate=fs, channels=1)
-        # sd.wait()  # Wait until recording is finished
-        time.sleep(duration)
+        time.sleep(duration)  # Wait until recording is finished
         write(filename, fs, recording)  # Save as WAV file
         print("Recording complete.")
         return filename

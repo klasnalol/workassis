@@ -30,6 +30,14 @@ CREATE TABLE IF NOT EXISTS users (
 )
 ''')
 
+#Create categories table
+cursor.execute('''
+CREATE TABLE IF NOT EXISTS categories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT UNIQUE NOT NULL
+)
+''')
+
 # Close connection
 conn.commit()
 conn.close()

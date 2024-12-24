@@ -1,7 +1,6 @@
 import logging
-
-import os, sqlite3, time
-from flask import Flask, request, render_template, redirect, url_for, flash, session, jsonify
+import os
+from flask import Flask
 from openai import OpenAI
 from flask_socketio import SocketIO
 from dotenv import load_dotenv
@@ -38,8 +37,8 @@ class Config:
     def __init_env_vars__(self):
         load_dotenv()
 
-    def __init__(self, app_name: str = "__main__", database: str = "database.db", host='0.0.0.0', port=5002, debug=False) -> None:
-        self.__init_vars__(app_name, database, host, port, debug)
+    def __init__(self, app_name: str = "__main__", database_url: str = os.getenv("DATABASE_URL"), host='0.0.0.0', port=5002, debug=False) -> None:
+        self.__init_vars__(app_name, database_url, host, port, debug)
         logging.basicConfig(filename='app.log', level=logging.DEBUG)
         os.makedirs(self.app.config['UPLOAD_FOLDER'], exist_ok=True)
 
