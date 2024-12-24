@@ -13,16 +13,16 @@
     <div class="product-info">
         <div>
             <div class="product-title">{{ product.name }}</div>
-            <div class="product-price">${{ product.price }}</div>
+            <div class="product-price">₸{{ product.price }}</div>
             <div class="product-description">
                 <strong>Description:</strong> {{ product.description }}
             </div>
 
             <!-- Tabs -->
             <div class="tabs">
-                <div class="tab active" onclick="openTab('overview')">Overview</div>
-                <div class="tab" onclick="openTab('specifications')">Specifications</div>
-                <div class="tab" onclick="openTab('reviews')">Reviews</div>
+                <div class="tab active" data-tab="overview">Overview</div>
+                <div class="tab" data-tab="specifications">Specifications</div>
+                <div class="tab" data-tab="reviews">Reviews</div>
             </div>
 
             <!-- Tab Contents -->
@@ -34,9 +34,13 @@
 
             <div id="specifications" class="tab-content">
                 <h2>Specifications</h2>
-                {% for detail in product.details %}
-                    <p><strong>{{ detail.key }}:</strong> {{ detail.value }}</p>
-                {% endfor %}
+                {% if product.details %}
+                    {% for detail in product.details %}
+                        <p><strong>{{ detail.key }}:</strong> {{ detail.value }}</p>
+                    {% endfor %}
+                {% else %}
+                    <p>No specifications available.</p>
+                {% endif %}
             </div>
 
             <div id="reviews" class="tab-content">
@@ -47,22 +51,42 @@
 
         <!-- Action Buttons -->
         <div class="action-buttons">
-            <a href="" class="buy-now">Buy Now</a> 
-            <a href="" class="add-to-cart">Add to Cart</a>
+            <a href="#" class="buy-now">Buy Now</a>
+            <a href="#" class="add-to-cart">Add to Cart</a>
             <a href="{{ url_for('index') }}" class="back-button">Back to Home</a>
         </div>
     </div>
 </div>
 
 <script>
-    function openTab(tabId) {
-        const tabs = document.querySelectorAll('.tab-content');
-        tabs.forEach(tab => tab.classList.remove('active'));
-        document.querySelector(`#${tabId}`).classList.add('active');
+    document.addEventListener('DOMContentLoaded', () => {
+        // Select all tabs and tab contents
+        const tabs = document.querySelectorAll('.tab');
+        const tabContents = document.querySelectorAll('.tab-content');
 
-        const tabButtons = document.querySelectorAll('.tab');
-        tabButtons.forEach(btn => btn.classList.remove('active'));
-        document.querySelector(`[onclick="openTab('${tabId}')"]`).classList.add('active');
-    }
+        // Add click event to each tab
+        tabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove 'active' class from all tabs and contents
+                tabs.forEach(t => t.classList.remove('active'));
+                tabContents.forEach(content => content.classList.remove('active'));
+
+                // Add 'active' class to the clicked tab and its corresponding content
+                tab.classList.add('active');
+                const tabId = tab.getAttribute('data-tab');
+                document.getElementById(tabId).classList.add('active');
+            });
+        });
+    });
 </script>
+
+<style>
+    .tab-content {
+        display: none;
+    }
+
+    .tab-content.active {
+        display: block;
+    }
+</style>
 {% endblock %}
