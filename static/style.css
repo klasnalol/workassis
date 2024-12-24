@@ -6,8 +6,9 @@ body {
     line-height: 1.6;
     margin: 0;
     padding: 0;
-    background-color: #196fa3;
-    color: #001f3f; /* Dark navy text */
+    background: rgb(2,0,36);
+    background: linear-gradient(90deg, rgba(2,0,36,1) 0%, rgba(63,77,183,1) 60%, rgba(78,91,232,1) 90%);
+    color: #d1b7e6; /* Dark navy text */
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -23,13 +24,13 @@ main {
 
 /* Header & Footer */
 header {
-    background: #2c2a82; /* Light blue */
+    background: #2c2a82;
     color: #fff;
     padding: 1.5rem 0;
     text-align: center;
     font-size: 2rem;
     font-weight: 700; /* Use a heavier weight for more prominence */
-    box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 footer {
@@ -38,7 +39,7 @@ footer {
     background: #87CEEB;
     color: #fff;
     margin-top: auto;
-    box-shadow: 0px -4px 6px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 -4px 6px rgba(0, 0, 0, 0.1);
     border-radius: 20px 20px 0 0;
 }
 
@@ -160,7 +161,7 @@ form button:hover, form button:focus {
     transform: translateY(-2px);
 }
 
-/* Overlayed product details */
+/* Overlay product details */
 .product-details {
     position: absolute;
     top: 0;
