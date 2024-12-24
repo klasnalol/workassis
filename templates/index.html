@@ -40,7 +40,6 @@
             </div>
         </form>
     </section>
-
     <!-- Button to Open Search Sidebar -->
     <div class="open-search-btn-container">
         <button id="open-search-sidebar" class="btn-open-search">{{ translations['search'] }}</button>
@@ -76,7 +75,6 @@
 <button id="floating-mic-btn">
     <img src="/static/images/mic.png" alt="Microphone" style="width:60px;height:60px;">
 </button>
-
 
 <!-- Search Sidebar -->
 <div id="search-sidebar" class="search-sidebar">
@@ -159,9 +157,9 @@
                     <div class="product-image">
                         <img src="${product.image_url}" alt="${product.name}" />
                     </div>
-                    <button class="details-toggle" onclick="toggleDetails(this)">More Info</button>
+                    <button class="details-toggle" onclick="toggleDetails(this)">{{ translations['more_info'] }}</button>
                     <div class="product-details">
-                        <button type="button" class="less-info-btn" onclick="closeDetails(this)">Less Info</button>
+                        <button type="button" class="less-info-btn" onclick="closeDetails(this)">{{ translations['less_info'] }}</button>
                         <h3>${product.name}</h3>
                         <p>${product.description}</p>
                         <p>Price: $${product.price}</p>
@@ -309,56 +307,6 @@
     // Populate microphones on load
     populateMicrophones();
 
-    // Handle click on floating mic button: replicate start of voice input
-    floatingMicBtn.addEventListener('click', async () => {
-        // Ensure we have a selected microphone
-        if (!micSelectVoice.value) {
-            alert("Please select a microphone first.");
-            return;
-        }
-
-        recordedChunksVoice = [];
-        const deviceId = micSelectVoice.value;
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: deviceId ? { exact: deviceId } : undefined } });
-        mediaRecorderVoice = new MediaRecorder(stream);
-
-        mediaRecorderVoice.ondataavailable = (event) => {
-            recordedChunksVoice.push(event.data);
-        };
-
-        mediaRecorderVoice.onstop = async () => {
-            const audioBlob = new Blob(recordedChunksVoice, { type: 'audio/webm' });
-            const formData = new FormData(formVoice);
-            formData.append('audio_file', audioBlob, 'voice_input.webm');
-            try {
-                const response = await fetch(formVoice.action, {
-                    method: 'POST',
-                    body: formData
-                });
-                if (response.ok) {
-                    const resultHtml = await response.text();
-                    document.open();
-                    document.write(resultHtml);
-                    document.close();
-                } else {
-                    console.error('Failed to submit audio.');
-                    alert('Failed to submit audio. Please try again.');
-                }
-            } catch (error) {
-                console.error('Error submitting audio:', error);
-                alert('Error submitting audio. Please try again.');
-            }
-        };
-
-        mediaRecorderVoice.start();
-        // Automatically stop after 5 seconds
-        setTimeout(() => {
-            if (mediaRecorderVoice && mediaRecorderVoice.state !== 'inactive') {
-                mediaRecorderVoice.stop();
-            }
-        }, 5000);
-    });
-
     // Existing voice_input logic
     startBtnVoice.addEventListener('click', async () => {
         recordedChunksVoice = [];
@@ -416,6 +364,7 @@
         }
     });
 
+    
     // For return_product
     startBtnReturn.addEventListener('click', async () => {
         recordedChunksReturn = [];
@@ -480,37 +429,5 @@
     function hideRecordingAnimation() {
         $('#recording-animation').addClass('d-none');
     }
-
-    // Idle Detection for Video Overlay
-    let idleTimer;
-    const idleTime = 120000; // 2 minutes in ms
-    const videoOverlay = document.getElementById('video-overlay');
-    const closeVideoBtn = document.getElementById('close-video-btn');
-
-    function showVideoOverlay() {
-        videoOverlay.style.display = 'flex';
-        const video = document.getElementById('idle-video');
-        video.play();
-    }
-
-    function hideVideoOverlay() {
-        videoOverlay.style.display = 'none';
-        resetIdleTimer();
-    }
-
-    function resetIdleTimer() {
-        clearTimeout(idleTimer);
-        idleTimer = setTimeout(showVideoOverlay, idleTime);
-    }
-
-    // Listen for user activity to reset timer
-    ['mousemove', 'keydown', 'touchstart', 'scroll'].forEach(evt => {
-        window.addEventListener(evt, resetIdleTimer, false);
-    });
-
-    closeVideoBtn.addEventListener('click', hideVideoOverlay);
-
-    // Show overlay as soon as the page loads
-    window.addEventListener('load', showVideoOverlay);
 </script>
 {% endblock %}

@@ -521,10 +521,11 @@ def search_products():
     sql_query = """
             SELECT products.id, products.name, categories.name AS category_name, 
                    products.description, products.price, products.image
-            FROM products
-            JOIN categories ON products.category_id = categories.id
-            WHERE LOWER(products.name) LIKE ? """
-    params = [f"%{query.lower()}%"]
+            FROM products, categories, products1
+            WHERE products.id = products1.rowid
+              AND categories.id = products.category_id
+              AND products1 MATCH ?;"""
+    params = [query]
 
     if category:
         sql_query += " AND LOWER(categories.name) LIKE ?"
@@ -591,7 +592,7 @@ def get_more_info(product_id):
 
         if product:
             # Generate additional information using GPT
-            prompt = f"Tell me about this product in 20-30 words: {product['name']}"
+            prompt = f"Расскажите мне об этом продукте в 20-30 словах: {product['name']}"
             response = config.client.chat.completions.create(
                 messages=[{"role": "user", "content": prompt}],
                 model="gpt-4o",
