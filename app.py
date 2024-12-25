@@ -198,11 +198,11 @@ def add_product():
             flash('Image file is required', 'error')
             return redirect(url_for('add_product'))
 
-        # Add product to the database
+        # Database connection
         conn = base.get_db_connection()
         cursor = conn.cursor()
 
-        # Get the category ID based on the name
+        # Get category ID
         cursor.execute("SELECT id FROM categories WHERE name = ?", (category_name,))
         category_row = cursor.fetchone()
         if not category_row:
@@ -218,6 +218,18 @@ def add_product():
             """,
             (name, description, float(price), filename, category_id)
         )
+        product_id = cursor.lastrowid
+
+        # Insert product details
+        for i in range(1, 11):
+            key = request.form.get(f'detail_key_{i}')
+            value = request.form.get(f'detail_value_{i}')
+            if key and value:
+                cursor.execute(
+                    "INSERT INTO product_details (product_id, key, value) VALUES (?, ?, ?)",
+                    (product_id, key, value)
+                )
+
         conn.commit()
         conn.close()
 
@@ -232,7 +244,6 @@ def add_product():
     conn.close()
 
     return render_template('add_product.html', categories=categories)
-
 
 # Save product route
 @app.route('/save_product/<int:product_id>', methods=['POST'])
@@ -858,4 +869,3 @@ def product_details(product_id):
 # Start Flask app
 if __name__ == '__main__':
     config.app_start()
-

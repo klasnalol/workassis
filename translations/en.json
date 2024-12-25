@@ -67,6 +67,9 @@
     "products": "Products",
     "no_products_found": "No products found matching your query.",
     "go_back_home": "Go back to Home",
-    "send_button": "Send"
+    "send_button": "Send",
+    "details": "Details (Optional)",
+    "key": "Key",
+    "value": "Value"
 }
 
