@@ -1,3 +1,3 @@
 #!/usr/bin/env sh
-docker stop worky
+docker stop worky &
 sudo systemctl stop nginx
