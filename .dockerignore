@@ -22,3 +22,6 @@ voice_input.wav
 # hidden files
 *.hidden
 *.hidden.*
+
+# Development files
+shell.nix
