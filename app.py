@@ -4,7 +4,7 @@ eventlet.monkey_patch()
 import os, sqlite3, time
 import json
 import glob
-from flask import request, render_template, redirect, g, url_for, flash, session, jsonify
+from flask import request, render_template, redirect, g, url_for, flash, session, jsonify, send_from_directory
 from flask_babel import Babel
 from flask_socketio import emit
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -101,6 +101,9 @@ def index():
 
     return render_template('index.html', products=products_json, categories=categories)
 
+@app.route('/robots.txt')
+def robots():
+   return send_from_directory('static', 'robots.txt') 
 
 # Voice input route
 @app.route('/voice_input', methods=['POST'])
