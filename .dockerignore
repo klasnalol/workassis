@@ -23,5 +23,13 @@ voice_input.wav
 *.hidden
 *.hidden.*
 
+
 # Development files
 shell.nix
+
+build.sh
+start.sh
+stop.sh
+
+# Docs
+*.md
