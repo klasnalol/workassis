@@ -1,4 +1,4 @@
-#!/usr/bin/env sh
+#!/usr/bin/env bash
 DEFAULT_IMAGE_NAME='worky'
 DEFAULT_CONTAINER_NAME='worky'
 DEFAULT_PORT_MAPPING='5002:5002'
