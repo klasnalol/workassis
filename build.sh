@@ -99,10 +99,10 @@ build(){
         docker_build && docker_run
     elif [[ $1 == "dev" ]]; then
 	stop_container
-        echo "dev!"
+        docker_build && docker_run "i"
     elif [[ $1 == "stop" ]]; then
         stop_container
-    elif [[ $1 == "i" ]]; then
+    elif [[ $1 =~ i(nter(active)?)?  ]]; then
         stop_container
         docker_build && docker_run "i"
     else
