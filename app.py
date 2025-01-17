@@ -534,10 +534,10 @@ def search_products():
     sql_query = """
         SELECT products.id, products.name, categories.name AS category_name, 
                products.description, products.price, products.image
-        FROM products
-        JOIN categories ON products.category_id = categories.id
-        JOIN products1 ON products.id = products1.rowid
-        WHERE products1 MATCH ?
+        FROM products, categories, products1
+        WHERE products.id = products1.rowid
+          AND categories.id = products.category_id
+          AND products1 MATCH ?
     """
     params = [query]
 
