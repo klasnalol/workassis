@@ -520,7 +520,6 @@ def admin_panel():
     )
 
 
-# Route for searching with filters
 @app.route('/search', methods=['GET'])
 def search_products():
     query = request.args.get('query', '')
@@ -531,30 +530,41 @@ def search_products():
     conn = base.get_db_connection()
     cursor = conn.cursor()
 
-    # Build SQL query dynamically based on filters
+    # Start building the SQL query
     sql_query = """
-            SELECT products.id, products.name, categories.name AS category_name, 
-                   products.description, products.price, products.image
-            FROM products, categories, products1
-            WHERE products.id = products1.rowid
-              AND categories.id = products.category_id
-              AND products1 MATCH ?;"""
+        SELECT products.id, products.name, categories.name AS category_name, 
+               products.description, products.price, products.image
+        FROM products
+        JOIN categories ON products.category_id = categories.id
+        JOIN products1 ON products.id = products1.rowid
+        WHERE products1 MATCH ?
+    """
     params = [query]
 
+    # Add category filter
     if category:
         sql_query += " AND LOWER(categories.name) LIKE ?"
         params.append(f"%{category.lower()}%")
 
+    # Add price range filter
     if price_range == 'low':
-        sql_query += " AND price < 50000"
+        sql_query += " AND products.price < 50000"
     elif price_range == 'medium':
-        sql_query += " AND price BETWEEN 50000 AND 200000"
+        sql_query += " AND products.price BETWEEN 50000 AND 200000"
     elif price_range == 'high':
-        sql_query += " AND price > 200000"
+        sql_query += " AND products.price > 200000"
 
-    cursor.execute(sql_query, params)
-    products = cursor.fetchall()
+    try:
+        # Execute the SQL query with parameters
+        cursor.execute(sql_query, params)
+        products = cursor.fetchall()
+    except sqlite3.ProgrammingError as e:
+        conn.close()
+        return f"Database error: {e}", 500
+
     conn.close()
+
+    # Prepare the JSON response
     products_json = [
         {
             "id": product[0],
@@ -567,8 +577,9 @@ def search_products():
         for product in products
     ]
 
-    # Pass the query and language to the template for display
+    # Render the results page
     return render_template('result.html', query=query, products=products_json, selected_language=selected_language)
+
 
 
 
