@@ -1,0 +1,3 @@
+[submodule "ollama"]
+	path = ollama
+	url = git@github.com:mciiee/w-ollama.git
