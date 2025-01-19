@@ -23,3 +23,6 @@ voice_input.wav
 # hidden files
 *.hidden
 *.hidden.*
+
+# Node modules
+node_modules/*

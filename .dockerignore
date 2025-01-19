@@ -32,4 +32,10 @@ start.sh
 stop.sh
 
 # Docs
-*.md
+**.md
+
+# npm packages
+node_modules/*
+package-lock.json
+package.json
+
