@@ -5,7 +5,12 @@ pkgs.mkShell {
   nativeBuildInputs = with pkgs.buildPackages; [
     python312
     python312Packages.python-lsp-server
+    
+    gnum4
+
+    nodejs_22
   ] ++ ollamaDependencies;
   shellHook = ''
+    m4 Makefile.m4 > Makefile
   '';  
 }

@@ -26,3 +26,5 @@ voice_input.wav
 
 # Node modules
 node_modules/*
+
+Makefile
