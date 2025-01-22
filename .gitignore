@@ -27,4 +27,7 @@ voice_input.wav
 # Node modules
 node_modules/*
 
+# Mostly for stashing
+stash/*
+
 Makefile
