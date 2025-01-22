@@ -14,7 +14,7 @@ from src.config import Config
 from src.base import Base 
 
 # import routes
-
+from routes.robots import robots_bp
 
 config = Config(
         app_name=__name__,
@@ -29,6 +29,7 @@ base = Base(database=config.database)
 # Call this function to ensure the table exists
 base.ensure_table_exists()
 app = config.app
+app.register_blueprint(robots_bp)
 app.config['BABEL_DEFAULT_LOCALE'] = 'ru'
 app.config['BABEL_SUPPORTED_LOCALES'] = ['en', 'ru', 'kz']
 babel = Babel(app)
@@ -101,9 +102,6 @@ def index():
 
     return render_template('index.html', products=products_json, categories=categories)
 
-@app.route('/robots.txt')
-def robots():
-   return send_from_directory('static', 'robots.txt') 
 
 # Voice input route
 @app.route('/voice_input', methods=['POST'])
