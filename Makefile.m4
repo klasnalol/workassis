@@ -13,6 +13,7 @@ CONTAINER_NAME ?= worky
 PORT_MAPPING ?= 5002:5002
 RUN_MODE ?= -d
 
+DOCKER_CLEAN_FORCE ?=
 
 
 all: build_run
@@ -39,6 +40,8 @@ docker_run:
 	@log_colored "Starting container: \"" && printf "\x1b[34m" && printf "$(CONTAINER_NAME)" && printf "\x1b[0m" && printf "\" under mode: \"" && printf "\x1b[34m" && printf "%s" $(RUN_MODE) && printf "\x1b[0m" && echo "\""
 	@docker run --name $(CONTAINER_NAME) $(RUN_MODE) -p $(PORT_MAPPING) $(IMAGE_NAME):$(IMAGE_VERSION) 
 
+docker_clean: 
+	docker system prune $(DOCKER_CLEAN_FORCE)
 
 build: write_startup_info docker_build
 
