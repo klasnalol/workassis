@@ -16,8 +16,18 @@ from src.base import Base
 
 from routes.robots import robots_bp
 from routes.search import search_bp
+from routes.scripts import scripts_bp
 
 from shared import config, base, get_conn
+
+
+config = Config(
+        app_name=__name__,
+        database_url="database1.db",
+        host="0.0.0.0",
+        port=5002,
+        debug=True
+)
 
 
 # Call this function to ensure the table exists
@@ -27,6 +37,7 @@ app = config.app
 
 app.register_blueprint(robots_bp)
 app.register_blueprint(search_bp)
+app.register_blueprint(scripts_bp)
 
 app.config['BABEL_DEFAULT_LOCALE'] = 'ru'
 app.config['BABEL_SUPPORTED_LOCALES'] = ['en', 'ru', 'kz']
@@ -72,7 +83,10 @@ def inject_translations():
 # Home route
 @app.route('/')
 def index():
-    # Load initial set of products to display on the homepage
+    # Ensure chat_history in session
+    if 'chat_history' not in session:
+        session['chat_history'] = []
+
     conn = base.get_db_connection()
     cursor = conn.cursor()
     cursor.execute('''SELECT 
@@ -101,8 +115,13 @@ def index():
             "image_url": image_url,
         })
 
-    return render_template('index.html', products=products_json, categories=categories)
-
+    # Pass chat_history to index.html
+    return render_template(
+        'index.html',
+        products=products_json,
+        categories=categories,
+        chat_history=session['chat_history']
+    )
 
 # Voice input route
 @app.route('/voice_input', methods=['POST'])
@@ -675,7 +694,7 @@ def load_more_products():
 
 @app.route('/chat', methods=['GET'])
 def chat():
-    # Initialize chat history if not present
+    # Initialize chat_history if not present
     if 'chat_history' not in session:
         session['chat_history'] = []
     return render_template('chat.html', chat_history=session['chat_history'])

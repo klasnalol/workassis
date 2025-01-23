@@ -769,3 +769,134 @@ form button:hover, form button:focus {
         grid-template-columns: 1fr;
     }
 }
+/* --------------------------------------------------
+   CHAT BOX CONTAINER
+   -------------------------------------------------- */
+   .chat-block {
+    /* Fixed at bottom-right */
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+  
+    /* Sizing: up to 80% of viewport height, 300px wide */
+    width: 300px;
+    max-height: 80vh; /* so it doesn’t fill entire screen */
+  
+    /* Visual style */
+    border: 1px solid #ccc;
+    border-radius: 16px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0,0,0,0.3);
+    overflow: hidden;  /* needed for transitions if toggling open/closed */
+  
+    /* If you want it to expand/collapse with an animation, 
+       you can animate max-height or transform. */
+    transition: max-height 0.3s ease;
+  }
+  
+  /* By default, "open" means show the chat up to 80vh */
+  .chat-block.chat-open {
+    max-height: 80vh;
+  }
+  
+  /* "closed" means we only show ~40px (just the header) */
+  .chat-block.chat-closed {
+    max-height: 40px;
+  }
+  
+  /* We’ll use flex layout so the header is pinned and the content can scroll */
+  .chat-block {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* --------------------------------------------------
+     HEADER
+     -------------------------------------------------- */
+  .chat-header {
+    /* Keep the header from shrinking or growing */
+    flex-shrink: 0;
+  
+    /* Layout: horizontally spaced content, center-aligned */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  
+    /* Visual style */
+    background-color: #007bff; /* Blue-ish (Bootstrap primary) */
+    color: #fff; 
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #ccc;
+  }
+  
+  /* Toggle button: the little “^” arrow */
+  .chat-toggle-btn {
+    background: transparent;
+    border: none;
+    color: #fff;
+    font-size: 1.25rem;  /* Slightly larger text for arrow */
+    cursor: pointer;
+    outline: none;
+    transition: transform 0.3s ease;
+  }
+  
+  /* Flip the arrow when open (rotate 180°) */
+  .chat-open .chat-toggle-btn {
+    transform: rotate(180deg);
+  }
+  
+  /* Optional chat title styling inside header */
+  .chat-title {
+    font-weight: bold;
+    font-size: 1rem;
+  }
+  
+  /* --------------------------------------------------
+     CONTENT AREA
+     -------------------------------------------------- */
+  .chat-content {
+    /* This will expand to fill leftover space in .chat-block */
+    flex: 1 1 auto;
+    overflow-y: auto;  /* scroll if content exceeds container */
+    padding: 10px;
+    box-sizing: border-box;
+  }
+  
+  /* If you want to separate the content from the footer (where you have input),
+     you can add another element for the footer area:
+     .chat-footer { flex-shrink: 0; ... } */
+  
+  /* --------------------------------------------------
+     CHAT MESSAGES
+     -------------------------------------------------- */
+  .chat-message {
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Bubbles for “user” or “bot” messages. Adjust color as you like. */
+  .chat-bubble {
+    display: inline-block;
+    padding: 8px 12px;
+    border-radius: 12px;
+    max-width: 70%;
+    word-wrap: break-word;
+    margin-bottom: 6px;
+  }
+  
+  .chat-bubble.user {
+    background-color: #007bff; /* same as header background */
+    color: #fff;
+    align-self: flex-end;
+    /* You might float or use a .d-flex around it. Example: text-align: right; */
+  }
+  
+  .chat-bubble.bot {
+    background-color: #f1f0f0; /* light gray */
+    color: #333;
+    align-self: flex-start;
+  }
+  
+  /* You can also have .d-flex containers or classes for positioning:
+     e.g., .message-row.user { justify-content: flex-end; } 
+     and .message-row.bot { justify-content: flex-start; } */
+  
