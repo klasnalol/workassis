@@ -10,37 +10,30 @@ from flask_socketio import emit
 from werkzeug.security import generate_password_hash, check_password_hash
 from werkzeug.utils import secure_filename
 from datetime import datetime
+
 from src.config import Config
 from src.base import Base 
 
-# import routes
 from routes.robots import robots_bp
+from routes.search import search_bp
 
-config = Config(
-        app_name=__name__,
-        database_url="database1.db",
-        host="0.0.0.0",
-        port=5002,
-        debug=True
-)
+from shared import config, base, get_conn
 
-base = Base(database=config.database)
 
 # Call this function to ensure the table exists
 base.ensure_table_exists()
+
 app = config.app
+
 app.register_blueprint(robots_bp)
+app.register_blueprint(search_bp)
+
 app.config['BABEL_DEFAULT_LOCALE'] = 'ru'
 app.config['BABEL_SUPPORTED_LOCALES'] = ['en', 'ru', 'kz']
 babel = Babel(app)
 
 # Allowed audio extensions
 ALLOWED_EXTENSIONS = {'wav', 'webm', 'mp3'}
-
-
-def allowed_file(filename):
-    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
-
 
 translations = {
     'en': 'translations/en.json',
@@ -49,11 +42,19 @@ translations = {
 }
 
 
+def allowed_file(filename):
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
 def load_translations(language):
     # Load translations for the given language
     with open(translations.get(language, 'translations/en.json'), 'r', encoding='utf-8') as f:
         return json.load(f)
 
+@app.teardown_appcontext
+def teardown_conn(exception):
+    conn = g.pop('conn', None)
+    if conn is not None:
+        conn.close()
 
 @app.before_request
 def before_request():
