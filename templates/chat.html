@@ -1,21 +1,24 @@
-{% extends "base.html" %}
-
-{% block title %}Chat{% endblock %}
-
-{% block content %}
 <!-- CSRF Token Meta Tag -->
 <meta name="csrf-token" content="{{ csrf_token }}">
 
-<div class="card mt-4">
-    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
-        <h5 class="mb-0">{{ translations['chat_title'] }}</h5>
-        <div>
-            <label for="mic-select-chat" class="mr-2">{{ translations['microphone_label'] }}</label>
-            <select id="mic-select-chat" class="form-control d-inline-block" style="width: auto;"></select>
+<!-- Outer container (styled like a card but without extra margins) -->
+<div class="card chat-card" style="margin: 0; border-radius: 12px; overflow: hidden;">
+    <!-- Header -->
+    <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center" style="border-radius: 0;">
+        <h5 class="mb-0" style="font-size: 1rem;">{{ translations['chat_title'] }}</h5>
+        <div class="d-flex align-items-center">
+            <label for="mic-select-chat" class="mb-0 mr-2" style="font-size: 0.8rem;">
+                {{ translations['microphone_label'] }}
+            </label>
+            <select id="mic-select-chat" class="form-control form-control-sm" style="width: auto;"></select>
         </div>
     </div>
-    <div class="card-body">
-        <div id="chat-box" class="mb-3" style="height: 400px; overflow-y: auto; border: 1px solid #ccc; padding: 10px; border-radius: 5px;">
+
+    <!-- Body -->
+    <div class="card-body d-flex flex-column" style="padding: 10px; height: 100%;">
+
+        <!-- Chat Box -->
+        <div id="chat-box" class="mb-3" style="height: 400px; overflow-y: auto;">
             {% for message in chat_history %}
                 <div class="d-flex {{ 'justify-content-end' if message.role == 'user' else 'justify-content-start' }}">
                     <div class="chat-bubble p-2 mb-2 {{ 'bg-primary text-white' if message.role == 'user' else 'bg-light text-dark' }}" style="border-radius: 10px; max-width: 70%;">
@@ -26,7 +29,7 @@
                 </div>
             {% endfor %}
         </div>
-
+        
         <!-- Recording Animation -->
         <div id="recording-animation" class="recording-animation d-none mb-2">
             <div class="mic-icon">
@@ -42,24 +45,40 @@
             </div>
         </div>
 
-        <div class="input-group mb-3">
-            <textarea id="user-input" class="form-control" placeholder="{{ translations['user_input_placeholder'] }}" rows="2"></textarea>
+        <!-- Input Row -->
+        <div class="input-group mb-2">
+            <textarea id="user-input" class="form-control" rows="2" 
+                      placeholder="{{ translations['user_input_placeholder'] }}"></textarea>
             <div class="input-group-append">
-                <button id="send-text-btn" class="btn btn-primary">{{ translations['send_button'] }}</button>
+                <button id="send-text-btn" class="btn btn-primary">
+                    {{ translations['send_button'] }}
+                </button>
             </div>
         </div>
+
+        <!-- Voice Buttons -->
         <div class="input-group">
-            <button id="record-voice-btn" class="btn btn-secondary" disabled>{{ translations['record_voice_button'] }}</button>
-            <button id="stop-record-voice-btn" class="btn btn-danger d-none">{{ translations['stop_recording_button'] }}</button>
+            <button id="record-voice-btn" class="btn btn-secondary" disabled>
+                {{ translations['record_voice_button'] }}
+            </button>
+            <button id="stop-record-voice-btn" class="btn btn-danger d-none">
+                {{ translations['stop_recording_button'] }}
+            </button>
         </div>
     </div>
 </div>
 
 <!-- Font Awesome for Microphone Icon -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-pZw+V4F2Z+1kZxGLQGq4HvO8+FvH9sE98VvNJUqkN3Z3eTTcSyYB+eJLjEJjV+F5LZX2x3Q8NhgVYxXhZtC1BA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+<link rel="stylesheet" 
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+      integrity="sha512-pZw+V4F2Z+1kZxGLQGq4HvO8+FvH9sE98VvNJUqkN3Z3eTTcSyYB+eJLjEJjV+F5LZX2x3Q8NhgVYxXhZtC1BA==" 
+      crossorigin="anonymous" referrerpolicy="no-referrer" />
 
+<!-- Socket.io and jQuery -->
 <script src="https://cdn.socket.io/4.4.1/socket.io.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+<!-- Inline CSS for Chat Styles -->
 <style>
     /* Bot Thinking Dots Animation */
     .bot-thinking-dots {
@@ -124,7 +143,14 @@
     .d-none {
         display: none !important;
     }
+
+    /* Optional tweak for smaller chat text */
+    .chat-bubble p {
+        margin-bottom: 0.4rem;
+    }
 </style>
+
+<!-- Main Chat Logic (same as before) -->
 <script>
     // Function to retrieve the CSRF token from the meta tag
     function getCSRFToken() {
@@ -140,6 +166,7 @@
         }
     });
 
+    // Initialize socket
     const socket = io();
 
     // Send text message to the server
@@ -152,12 +179,12 @@
             // Show bot thinking indicator
             showBotThinking();
 
-            // Emit the message to the server
+            // Emit message to the server
             socket.emit('send_text_message', { message: userMessage });
         }
     });
 
-    // Handle receiving a message from the server
+    // Handle receiving a message
     socket.on('receive_message', (data) => {
         const { role, content, timestamp, voice_url } = data;
 
@@ -184,21 +211,21 @@
     function appendMessageToChatBox(role, content, timestamp) {
         const chatBox = $('#chat-box');
         const chatBubble = `
-            <div class="d-flex ${role === 'user' ? 'justify-content-end' : 'justify-content-start'}">
-                <div class="chat-bubble p-2 mb-2 ${role === 'user' ? 'bg-primary text-white' : 'bg-light text-dark'}" style="border-radius: 10px; max-width: 70%;">
+            <div class="d-flex ${role === 'user' ? 'justify-content-end' : 'justify-content-start'} mb-2">
+                <div class="chat-bubble p-2 ${role === 'user' ? 'bg-primary text-white' : 'bg-light text-dark'}"
+                     style="border-radius: 10px; max-width: 70%;">
                     <small><strong>${role.charAt(0).toUpperCase() + role.slice(1)}</strong></small><br>
-                    <p>${content}</p>
+                    <p class="mb-1">${content}</p>
                     <small class="text-muted">${timestamp}</small>
                 </div>
             </div>`;
         chatBox.append(chatBubble);
-        chatBox.scrollTop(chatBox[0].scrollHeight); // Auto-scroll to the bottom
+        chatBox.scrollTop(chatBox[0].scrollHeight); // Auto-scroll
     }
 
     // Show bot thinking indicator
     function showBotThinking() {
         $('#bot-thinking').removeClass('d-none');
-        // Scroll to the bottom to show the thinking indicator
         const chatBox = $('#chat-box');
         chatBox.scrollTop(chatBox[0].scrollHeight);
     }
@@ -214,12 +241,16 @@
         appendMessageToChatBox(role, content, timestamp);
     }
 
-    // Initialize microphone selection
+    // On page load, populate microphone dropdown
+    $(document).ready(() => {
+        populateMicrophones();
+    });
+
+    // Microphone handling
     async function populateMicrophones() {
         try {
-            // Request microphone access to ensure device labels are available
+            // Request microphone access so device labels are available
             await navigator.mediaDevices.getUserMedia({ audio: true });
-
             const devices = await navigator.mediaDevices.enumerateDevices();
             const audioInputs = devices.filter(d => d.kind === 'audioinput');
 
@@ -227,7 +258,7 @@
             micSelect.empty();
 
             audioInputs.forEach((device, index) => {
-                const option = `<option value="${device.deviceId}">${device.label || `Microphone ${index + 1}`}</option>`;
+                const option = `<option value="${device.deviceId}">${device.label || 'Microphone ' + (index + 1)}</option>`;
                 micSelect.append(option);
             });
 
@@ -241,14 +272,9 @@
             console.error('Error fetching microphones:', error);
             $('#mic-select-chat').html('<option value="">No microphone available</option>');
             $('#record-voice-btn').prop('disabled', true);
-            alert('Could not access microphones. Please check your browser settings and permissions.');
+            alert('Could not access microphones. Check your browser settings and permissions.');
         }
     }
-
-    // Call populateMicrophones on page load
-    $(document).ready(() => {
-        populateMicrophones();
-    });
 
     let mediaRecorderVoice;
     let recordedChunksVoice = [];
@@ -265,7 +291,7 @@
 
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
-                audio: { deviceId: deviceId ? { exact: deviceId } : undefined }
+                audio: { deviceId: { exact: deviceId } }
             });
             mediaRecorderVoice = new MediaRecorder(stream);
 
@@ -280,10 +306,10 @@
                 const formData = new FormData();
                 formData.append('audio_file', audioBlob, 'voice_input.webm');
 
-                // Show bot thinking indicator as the server processes the voice message
+                // Show bot thinking while server processes the voice
                 showBotThinking();
 
-                // Send the audio file via AJAX to /chat_voice
+                // Send voice data via AJAX
                 $.ajax({
                     url: '/chat_voice',
                     type: 'POST',
@@ -297,19 +323,15 @@
                         } else {
                             const { user_message, bot_message, bot_voice_url } = response;
                             const timestamp = new Date().toLocaleTimeString();
-
-                            // Append user message
+                            // Show user’s own message
                             appendMessageToChatBox('user', user_message, timestamp);
-
-                            // Append bot response
+                            // Show bot’s message
                             appendMessageToChatBox('bot', bot_message, timestamp);
-
-                            // Play bot's voice response if available
+                            // Play bot's voice if present
                             if (bot_voice_url) {
                                 const audio = new Audio(bot_voice_url);
                                 audio.play();
                             }
-
                             hideBotThinking();
                         }
                     },
@@ -321,15 +343,14 @@
                 });
             };
 
+            // Start recording
             mediaRecorderVoice.start();
-
-            // Show recording animation
             showRecordingAnimation();
 
             $('#record-voice-btn').prop('disabled', true);
             $('#stop-record-voice-btn').prop('disabled', false).removeClass('d-none');
 
-            // Automatically stop after 5 seconds
+            // Automatically stop after 5 seconds (optional)
             setTimeout(() => {
                 if (mediaRecorderVoice && mediaRecorderVoice.state !== 'inactive') {
                     mediaRecorderVoice.stop();
@@ -338,13 +359,14 @@
                     $('#stop-record-voice-btn').prop('disabled', true).addClass('d-none');
                 }
             }, 5000);
+
         } catch (error) {
             console.error('Error accessing microphone:', error);
-            alert('Could not access the microphone. Please check your permissions and try again.');
+            alert('Could not access the microphone. Check permissions and try again.');
         }
     });
 
-    // Stop recording voice manually
+    // Stop recording manually
     $('#stop-record-voice-btn').click(() => {
         if (mediaRecorderVoice && mediaRecorderVoice.state !== 'inactive') {
             mediaRecorderVoice.stop();
@@ -364,7 +386,7 @@
         $('#recording-animation').addClass('d-none');
     }
 
-    // Handle pressing Enter to send message
+    // Press Enter to send text
     $('#user-input').keypress((e) => {
         if (e.which === 13 && !e.shiftKey) {
             e.preventDefault();
@@ -372,4 +394,3 @@
         }
     });
 </script>
-{% endblock %}

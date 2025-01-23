@@ -71,7 +71,10 @@ def inject_translations():
 # Home route
 @app.route('/')
 def index():
-    # Load initial set of products to display on the homepage
+    # Ensure chat_history in session
+    if 'chat_history' not in session:
+        session['chat_history'] = []
+
     conn = base.get_db_connection()
     cursor = conn.cursor()
     cursor.execute('''SELECT 
@@ -100,8 +103,13 @@ def index():
             "image_url": image_url,
         })
 
-    return render_template('index.html', products=products_json, categories=categories)
-
+    # Pass chat_history to index.html
+    return render_template(
+        'index.html',
+        products=products_json,
+        categories=categories,
+        chat_history=session['chat_history']
+    )
 
 # Voice input route
 @app.route('/voice_input', methods=['POST'])
@@ -674,7 +682,7 @@ def load_more_products():
 
 @app.route('/chat', methods=['GET'])
 def chat():
-    # Initialize chat history if not present
+    # Initialize chat_history if not present
     if 'chat_history' not in session:
         session['chat_history'] = []
     return render_template('chat.html', chat_history=session['chat_history'])
