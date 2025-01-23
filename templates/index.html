@@ -2,12 +2,17 @@
 
 {% block title %}{{ translations['welcome'] }}{% endblock %}
 
-{% block content %}
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-pZw+V4F2Z+1kZxGLQGq4HvO8+FvH9sE98VvNJUqkN3Z3eTTcSyYB+eJLjEJjV+F5LZX2x3Q8NhgVYxXhZtC1BA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+{% block scripts %}
 <script defer  src="{{ url_for('static', filename='scripts/socket.io.min.js') }}"></script>
 <script defer src="{{ url_for('static', filename='scripts/jquery-3.6.0.min.js') }}"></script>
 <script defer src="{{ url_for('static', filename='scripts/index.min.js') }}"></script>
 <script defer src="{{ url_for('static', filename='scripts/chat_block.js') }}"></script>
+{% endblock %}
+
+{% block content %}
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/all.min.css') }}"/>
+
 
 
 <main>
