@@ -47,5 +47,8 @@ build: write_startup_info docker_build
 
 build_run: docker_build | docker_run
 
+run:
+	source bin/activate && python app.py
+
 Makefile:
 	m4 Makefile.m4 > Makefile
