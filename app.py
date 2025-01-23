@@ -16,6 +16,9 @@ from src.base import Base
 # import routes
 from routes.robots import robots_bp
 
+
+from routes.scripts import scripts_bp
+
 config = Config(
         app_name=__name__,
         database_url="database1.db",
@@ -30,6 +33,7 @@ base = Base(database=config.database)
 base.ensure_table_exists()
 app = config.app
 app.register_blueprint(robots_bp)
+app.register_blueprint(scripts_bp)
 app.config['BABEL_DEFAULT_LOCALE'] = 'ru'
 app.config['BABEL_SUPPORTED_LOCALES'] = ['en', 'ru', 'kz']
 babel = Babel(app)
