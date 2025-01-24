@@ -4,10 +4,10 @@
 
 
 {% block scripts %}
-<script defer  src="{{ url_for('static', filename='scripts/socket.io.min.js') }}"></script>
-<script defer src="{{ url_for('static', filename='scripts/jquery-3.6.0.min.js') }}"></script>
-<script defer src="{{ url_for('static', filename='scripts/index.min.js') }}"></script>
-<script defer src="{{ url_for('static', filename='scripts/chat_block.min.js') }}"></script>
+<script defer  src="{{ url_for('static', filename='scripts/lib/socket.io.min.js') }}"></script>
+<script defer src="{{ url_for('static', filename='scripts/lib/jquery-3.6.0.min.js') }}"></script>
+<script defer src="{{ url_for('static', filename='scripts/minified/index.min.js') }}"></script>
+<script defer src="{{ url_for('static', filename='scripts/minified/chat_block.min.js') }}"></script>
 {% endblock %}
 
 {% block content %}

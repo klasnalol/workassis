@@ -56,15 +56,7 @@
     // Append messages to the chat box
     function appendMessageToChatBox(role, content, timestamp) {
         const chatBox = $('#chat-box');
-        const chatBubble = `
-            <div class="d-flex ${role === 'user' ? 'justify-content-end' : 'justify-content-start'} mb-2">
-                <div class="chat-bubble p-2 ${role === 'user' ? 'bg-primary text-white' : 'bg-light text-dark'}"
-                     style="border-radius: 10px; max-width: 70%;">
-                    <small><strong>${role.charAt(0).toUpperCase() + role.slice(1)}</strong></small><br>
-                    <p class="mb-1">${content}</p>
-                    <small class="text-muted">${timestamp}</small>
-                </div>
-            </div>`;
+        const chatBubble = `<div class="d-flex ${role === 'user' ? 'justify-content-end' : 'justify-content-start'} mb-2"><div class="chat-bubble p-2 ${role === 'user' ? 'bg-primary text-white' : 'bg-light text-dark'}" style="border-radius: 10px; max-width: 70%;"><small><strong>${role.charAt(0).toUpperCase() + role.slice(1)}</strong></small><br><p class="mb-1">${content}</p><small class="text-muted">${timestamp}</small></div></div>`;
         chatBox.append(chatBubble);
         chatBox.scrollTop(chatBox[0].scrollHeight); // Auto-scroll
     }
