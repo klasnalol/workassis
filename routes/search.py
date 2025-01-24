@@ -1,5 +1,6 @@
 from flask import Blueprint, request, render_template, current_app, g
 
+from shared import base
 
 search_bp = Blueprint('search', __name__, template_folder='templates')
 
@@ -11,12 +12,7 @@ def search_products():
     price_range = request.args.get('price_range', '')
     selected_language = request.args.get('language', 'en')  # Capture the selected language
 
-    with current_app.app_context():
-        conn = g.get('db', None)
-
-        if conn is None:
-            raise Exception("Could not establish connection to the database!")
-    
+    conn = base.get_db_connection()
     cursor = conn.cursor()
 
     # Start building the SQL query
