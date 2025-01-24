@@ -19,6 +19,7 @@ DOCKER_CLEAN_FORCE ?=
 JS_SCRIPTS_DIR = static/scripts
 JS_SOURCE = $(wildcard $(JS_SCRIPTS_DIR)/source/*.js)
 JS_MINIFIED = $(foreach name,$(basename $(notdir $(JS_SOURCE))), static/scripts/minified/$(name).min.js)
+
 all: build_run
 
 write_startup_info: 
@@ -26,6 +27,11 @@ write_startup_info:
 	@printf "Container:" && printf "\x1b[34m" && echo $(CONTAINER_NAME) && printf "\x1b[0m"
 	@printf "Ports:" && printf "\x1b[34m" && echo $(PORT_MAPPING) && printf "\x1b[0m"
 
+$(JS_MINIFIED): $(JS_SOURCE)
+	@set_purple && printf "[LOG]" && reset_color && printf ' miniying js files: "' && set_blue && printf '$(JS_SOURCE)' && reset_color && echo '"'
+	@for i in static/scripts/source/*.js; do j="$${i##*/}" && npx minify $$i -o "static/scripts/minified/$${j%%.js}.min.js"; done
+
+minify: $(JS_MINIFIED)
 
 
 stop_container:
@@ -34,7 +40,7 @@ stop_container:
 	@(docker container stop $(CONTAINER_NAME) || log_colored "Could not stop container: $(CONTAINER_NAME)\n") && (docker container rm $(CONTAINER_NAME) || log_colored  "Could not remove container: $(CONTAINER_NAME)\n") && log_colored "Successfully stopped $(CONTAINER_NAME)\n" 
 
 
-docker_build: stop_container
+docker_build: stop_container minify
 	@log_colored "Building image: \"" && printf "\x1b[34m" && printf "%s:%s" $(IMAGE_NAME) $(IMAGE_VERSION) && printf "\x1b[0m" && echo "\""
 	@docker build -t $(IMAGE_NAME):$(IMAGE_VERSION) .
 
@@ -52,12 +58,6 @@ build_run: docker_build | docker_run
 
 run:
 	source bin/activate && python app.py
-
-
-$(JS_MINIFIED): $(JS_SOURCE)
-	for i in static/scripts/source/*.js; do j="$${i##*/}" && npx minify $$i -o "static/scripts/minified/$${j%%.js}.min.js"; done
-
-minify: $(JS_MINIFIED)
 
 Makefile:
 	m4 Makefile.m4 > Makefile
