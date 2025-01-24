@@ -50,5 +50,12 @@ build_run: docker_build | docker_run
 run:
 	source bin/activate && python app.py
 
+
+$(JS_MINIFIED): $(JS_SOURCE)
+	for i in static/scripts/source/*.js; do j="$${i##*/}" && echo npx minify $$i -o "static/scripts/$${j%%.js}.min.js"; done
+
+minify: $(JS_MINIFIED)
+
+
 Makefile:
 	m4 Makefile.m4 > Makefile

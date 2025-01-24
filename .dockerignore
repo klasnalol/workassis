@@ -39,3 +39,6 @@ node_modules/*
 package-lock.json
 package.json
 
+# Source scripts
+static/scripts/source/*
+
