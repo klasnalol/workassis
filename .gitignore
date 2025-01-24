@@ -6,7 +6,8 @@
 
 # ignore venv files
 include/*
-lib**
+lib/
+lib64
 bin/*
 pyvenv.cfg
 
@@ -30,6 +31,9 @@ node_modules/*
 # Mostly for stashing
 stash/*
 
+# Minified js. You can make the using make
 static/scripts/minified/*
+# Allow all the js libraries
+!static/scripts/lib
 
 Makefile
