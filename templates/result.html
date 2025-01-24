@@ -19,7 +19,7 @@
                     <h4>{{ product['name'] }}</h4>
                     <p>{{ translations['price'] }} ₸ {{ product['price'] }}</p>
                     <p>{{ translations['category'] }}: {{ product['category'] }}</p>
-                    <button class="details-toggle" onclick="fetchMoreInfo({{ product['id'] }})">{{ translations['more_info'] }}</button>
+                    <button class="details-toggle" product-id="{{ product['id'] }}" >{{ translations['more_info'] }}</button>
                     <div id="product-details-{{ product['id'] }}" class="product-details" style="display: none;">
                         <p id="additional-info-{{ product['id'] }}"></p>
                     </div>
@@ -32,35 +32,5 @@
     <a href="{{ url_for('index') }}">{{ translations['go_back_home'] }}</a>
 </section>
 
-<script>
-    async function fetchMoreInfo(productId) {
-        const detailsDiv = document.getElementById(`product-details-${productId}`);
-        const infoParagraph = document.getElementById(`additional-info-${productId}`);
-
-        if (detailsDiv.style.display === 'none') {
-            try {
-                const response = await fetch(`/get_more_info/${productId}`);
-                if (!response.ok) {
-                    throw new Error('Failed to fetch additional information.');
-                }
-
-                const data = await response.json();
-                infoParagraph.textContent = data.additional_info;
-
-                // Play the generated audio if available
-                if (data.audio_url) {
-                    const audio = new Audio(data.audio_url);
-                    audio.play();
-                }
-
-                detailsDiv.style.display = 'block';
-            } catch (error) {
-                console.error('Error fetching more info:', error);
-            }
-        } else {
-            detailsDiv.style.display = 'none';
-        }
-    }
-</script>
-
+<script defer src="{{ url_for('static', filename='scripts/minified/result.min.js') }}"></script>
 {% endblock %}

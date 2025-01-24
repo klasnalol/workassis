@@ -55,7 +55,7 @@ run:
 
 
 $(JS_MINIFIED): $(JS_SOURCE)
-	for i in static/scripts/source/*.js; do j="$${i##*/}" && echo npx minify $$i -o "static/scripts/$${j%%.js}.min.js"; done
+	for i in static/scripts/source/*.js; do j="$${i##*/}" && npx minify $$i -o "static/scripts/minified/$${j%%.js}.min.js"; done
 
 minify: $(JS_MINIFIED)
 
