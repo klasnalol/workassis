@@ -16,6 +16,9 @@ RUN_MODE ?= -d
 DOCKER_CLEAN_FORCE ?=
 
 
+JS_SCRIPTS_DIR = static/scripts
+JS_SOURCE = $(wildcard $(JS_SCRIPTS_DIR)/source/*.js)
+JS_MINIFIED = $(foreach name,$(basename $(notdir $(JS_SOURCE))), static/scripts/minified/$(name).min.js)
 all: build_run
 
 write_startup_info: 
@@ -55,7 +58,6 @@ $(JS_MINIFIED): $(JS_SOURCE)
 	for i in static/scripts/source/*.js; do j="$${i##*/}" && echo npx minify $$i -o "static/scripts/$${j%%.js}.min.js"; done
 
 minify: $(JS_MINIFIED)
-
 
 Makefile:
 	m4 Makefile.m4 > Makefile
