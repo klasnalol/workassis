@@ -8,7 +8,7 @@
     <p><strong>{{ translations['your_query'] }}</strong> {{ query }}</p>
     <h3>{{ translations['products'] }}</h3>
     {% if products and products|length > 0 %}
-        <div class="products-grid">
+        <div class="products-grid" id="products-container">
             {% for product in products %}
                 <div class="product-item">
                     <div class="product-image">
