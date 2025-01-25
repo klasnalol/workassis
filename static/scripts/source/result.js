@@ -1,3 +1,12 @@
+const dummyElement = document.createElement("dialog")
+
+function checkIfNotNull(element, name, selector){
+    if(element !== null){
+        return;
+    }
+    console.error(`Could not find a ${name} by selector '${selector}'`);
+}
+
 function hookEventListeners() {
   const productDetailsToggles = document.querySelectorAll(".details-toggle");
   let productId = 0;
@@ -6,14 +15,31 @@ function hookEventListeners() {
       productId = productDetailToggle.getAttribute("product-id");
       fetchMoreInfo(productId);
     });
+    
+
+    const filterButtonSelector = "#filter-button";
+    /** @type {HTMLButtonElement | null} */
+    const filterButton = document.querySelector(filterButtonSelector);
+    const filterDialogSelector = "#filter-dealog";
+    /** @type {HTMLDialogElement | null} */
+    const filterDialog = document.querySelector(filterDialogSelector);
+    checkIfNotNull(filterButton, "filter button", filterButtonSelector);
+    checkIfNotNull(filterDialog, "dialog", filterDialogSelector);
+    (filterButton || dummyElement).addEventListener("click", (event) => {
+        (filterDialog || dummyElement).showModal()
+    });
   }
 }
 
 async function fetchMoreInfo(productId) {
-  const detailsDiv = document.getElementById(`product-details-${productId}`);
-  const infoParagraph = document.getElementById(`additional-info-${productId}`);
+  const detailsDivSelector = `#product-details-${productId}`;
+  const detailsDiv = document.querySelector(detailsDivSelector) 
+  const infoParagraphSelector = `#additional-info-${productId}`;
+  const infoParagraph = document.getElementById(infoParagraphSelector);
 
-  if (detailsDiv.style.display === "none") {
+  checkIfNotNull(detailsDivSelector, "details div", detailsDivSelector);
+  checkIfNotNull(infoParagraph, "info paragraph", infoParagraphSelector);
+  if ((detailsDiv || dummyElement).style.display === "none") {
     try {
       const response = await fetch(`/get_more_info/${productId}`);
       if (!response.ok) {
