@@ -1,5 +1,6 @@
 #!/usr/bin/env make
 
+
 IMAGE_NAME ?= worky
 IMAGE_VERSION ?= latest
 CONTAINER_NAME ?= worky
@@ -12,6 +13,8 @@ DOCKER_CLEAN_FORCE ?=
 JS_SCRIPTS_DIR = static/scripts
 JS_SOURCE = $(wildcard $(JS_SCRIPTS_DIR)/source/*.js)
 JS_MINIFIED = $(foreach name,$(basename $(notdir $(JS_SOURCE))), static/scripts/minified/$(name).min.js)
+
+VENV_FILES = include lib/ lib64 bin/ pyvenv.cfg
 
 all: build_run
 
@@ -51,6 +54,12 @@ build_run: docker_build | docker_run
 
 run:
 	source bin/activate && python app.py
+
+start-venv:
+	$(PYTHON) -m venv .
+
+remove-venv:
+	rm -rf $(VENV_FILES)
 
 Makefile:
 	m4 Makefile.m4 > Makefile
