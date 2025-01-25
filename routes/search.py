@@ -1,4 +1,4 @@
-from flask import Blueprint, request, render_template, current_app, g
+from flask import Blueprint, request, render_template, current_app
 
 from shared import base
 
@@ -6,7 +6,6 @@ search_bp = Blueprint('search', __name__, template_folder='templates')
 
 @search_bp.route('/search', methods=['GET'])
 def search_products():
-    
     query = request.args.get('query', '')
     category = request.args.get('category', '')
     price_range = request.args.get('price_range', '')
