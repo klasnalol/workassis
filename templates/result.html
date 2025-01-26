@@ -3,7 +3,7 @@
 {% block title %}Result - Product Query App{% endblock %}
 
 {% block scripts %}
-<<link rel="stylesheet" href="{{ url_for('static', filename='styles/result.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='styles/result.css') }}">
 {% endblock %}
 {% block content %}
 <section>
@@ -11,7 +11,7 @@
     <p><strong>{{ translations['your_query'] }}</strong> {{ query }}</p>
     <h3>{{ translations['products'] }}</h3>
     {# TODO: implement translations #}
-    {# TODO: implement translations #}
+    {# TODO: implement filter #}
     <div>
         <h5 id="filter-h5">
 		<button id="filter-button" class="details-toggle">Фильтры</button>
