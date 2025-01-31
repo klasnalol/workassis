@@ -17,6 +17,7 @@ from src.base import Base
 from routes.robots import robots_bp
 from routes.search import search_bp
 from routes.api.products import products_bp
+from routes.api.products_voice_filter import products_voice_filter_bp
 
 from shared import config, base, get_conn
 
@@ -38,6 +39,7 @@ app = config.app
 app.register_blueprint(robots_bp)
 app.register_blueprint(search_bp)
 app.register_blueprint(products_bp)
+app.register_blueprint(products_voice_filter_bp)
 
 app.config['BABEL_DEFAULT_LOCALE'] = 'ru'
 app.config['BABEL_SUPPORTED_LOCALES'] = ['en', 'ru', 'kz']

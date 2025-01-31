@@ -14,21 +14,39 @@
     {# TODO: implement filter #}
     <div>
         <h5 id="filter-h5">
-        <button id="filter-button" class="details-toggle">Фильтры</button>
-        <dialog id="filter-dealog">
-            <div id="dialog-inner-wrapper-div">
-                <form method="dialog" class="container">
-                    <div id="filter-pricerange-div" class="container-md">
-                        <span>От: <input type="number" placeholder="{{ products | map(attribute = "price") | min }}"></span>
-                        <span>До: <input type="number" placeholder="{{ products | map(attribute = "price") | max }}"></span>
-                        <input id="filter-slider-input" type="range">
-                    </div>
-                    <button type="submit" class="">Применить</button>
-                </form>
+            <div>
+                <button id="filter-button" class="details-toggle">Фильтры</button>
+                <dialog id="filter-dialog">
+                  <div id="dialog-inner-wrapper-div">
+                    <form method="dialog" class="container">
+                        <div id="filter-pricerange-div" class="container-md">
+                          <span>От: <input type="number" placeholder="{{ products | map(attribute = 'price') | min }}"></span>
+                          <span>До: <input type="number" placeholder="{{ products | map(attribute = 'price') | max }}"></span>
+                          <input id="filter-slider-input" type="range">
+                        </div>
+                        <button type="submit" class="">Применить</button>
+                    </form>
+                  </div>
+                </dialog>
+                <button id="filter-button" class="details-toggle">Голосовой фильтр</button>
+                <dialog>
+                    <form action="/products-voice-filter" method="post" enctype="multipart/form-data">
+                    <label for="mic-select-return">{{ translations['microphone'] }}:</label>
+            <select id="mic-select-return"></select>
+            <button type="button" id="start-record-btn-return" class="full-width-btn">{{ translations['start_recording'] }}</button>
+            <button type="button" id="stop-record-btn-return" class="full-width-btn" disabled style="display: none">Stop Recording</button>
+            <!-- Recording Animation -->
+            <div id="recording-animation" class="recording-animation d-none mb-2">
+                <div class="mic-icon">
+                    <i class="fas fa-microphone-alt fa-2x"></i>
+                </div>
+                <div class="pulse"></div>
             </div>
 
-        </dialog>
-</h5>
+                    </form>
+                </dialog>
+            </div>
+        </h5>
     </div> 
     {% if products and products|length > 0 %}
         <div class="products-grid" id="products-container">

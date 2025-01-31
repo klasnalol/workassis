@@ -1,10 +1,10 @@
-const dummyElement = document.createElement("dialog")
+const dummyElement = document.createElement("dialog");
 
-function checkIfNotNull(element, name, selector){
-    if(element !== null){
-        return;
-    }
-    console.error(`Could not find a ${name} by selector '${selector}'`);
+function checkIfNotNull(element, name, selector) {
+  if (element !== null) {
+    return;
+  }
+  console.error(`Could not find a ${name} by selector '${selector}'`);
 }
 
 function hookEventListeners() {
@@ -15,25 +15,75 @@ function hookEventListeners() {
       productId = productDetailToggle.getAttribute("product-id");
       fetchMoreInfo(productId);
     });
-    
 
     const filterButtonSelector = "#filter-button";
     /** @type {HTMLButtonElement | null} */
     const filterButton = document.querySelector(filterButtonSelector);
-    const filterDialogSelector = "#filter-dealog";
+    const filterDialogSelector = "#filter-dialog";
     /** @type {HTMLDialogElement | null} */
     const filterDialog = document.querySelector(filterDialogSelector);
     checkIfNotNull(filterButton, "filter button", filterButtonSelector);
     checkIfNotNull(filterDialog, "dialog", filterDialogSelector);
     (filterButton || dummyElement).addEventListener("click", (event) => {
-        (filterDialog || dummyElement).showModal()
+      (filterDialog || dummyElement).showModal();
+    });
+    // TODO: Implement voice filter 
+    const startBtnVoice = document.querySelector("");
+    startBtnVoice.addEventListener("click", async () => {
+      recordedChunksVoice = [];
+      const deviceId = micSelectVoice.value;
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: { deviceId: deviceId ? { exact: deviceId } : undefined },
+      });
+      mediaRecorderVoice = new MediaRecorder(stream);
+
+      mediaRecorderVoice.ondataavailable = (event) => {
+        recordedChunksVoice.push(event.data);
+      };
+
+      mediaRecorderVoice.onstop = async () => {
+        const audioBlob = new Blob(recordedChunksVoice, { type: "audio/webm" });
+        const formData = new FormData(formVoice);
+        formData.append("audio_file", audioBlob, "voice_input.webm");
+        try {
+          const response = await fetch(formVoice.action, {
+            method: "POST",
+            body: formData,
+          });
+          if (response.ok) {
+            const resultHtml = await response.text();
+            document.open();
+            document.write(resultHtml);
+            document.close();
+          } else {
+            console.error("Failed to submit audio.");
+            alert("Failed to submit audio. Please try again.");
+          }
+        } catch (error) {
+          console.error("Error submitting audio:", error);
+          alert("Error submitting audio. Please try again.");
+        }
+      };
+
+      mediaRecorderVoice.start();
+      startBtnVoice.disabled = true;
+      stopBtnVoice.disabled = false;
+
+      // Automatically stop after 5 seconds
+      setTimeout(() => {
+        if (mediaRecorderVoice && mediaRecorderVoice.state !== "inactive") {
+          mediaRecorderVoice.stop();
+          startBtnVoice.disabled = false;
+          stopBtnVoice.disabled = true;
+        }
+      }, 5000);
     });
   }
 }
 
 async function fetchMoreInfo(productId) {
   const detailsDivSelector = `#product-details-${productId}`;
-  const detailsDiv = document.querySelector(detailsDivSelector) 
+  const detailsDiv = document.querySelector(detailsDivSelector);
   const infoParagraphSelector = `#additional-info-${productId}`;
   const infoParagraph = document.getElementById(infoParagraphSelector);
 
