@@ -14,6 +14,8 @@ JS_SCRIPTS_DIR = static/scripts
 JS_SOURCE = $(wildcard $(JS_SCRIPTS_DIR)/source/*.js)
 JS_MINIFIED = $(foreach name,$(basename $(notdir $(JS_SOURCE))), static/scripts/minified/$(name).min.js)
 
+JS_PRETTYFY_SRC=$(JS_SOURCE)
+
 VENV_FILES = include lib/ lib64 bin/ pyvenv.cfg
 
 all: build_run
@@ -29,6 +31,8 @@ $(JS_MINIFIED): $(JS_SOURCE)
 
 minify: $(JS_MINIFIED)
 
+prettify: $(JS_PRETTYFY_SRC)
+	for file in $(JS_PRETTYFY_SRC); do npx prettier $$file --write; done 
 
 stop_container:
 	@printf "\x1b[35m" && printf "[LOG] " && printf "\x1b[0m" && printf  "Trying to stop container: \"$(CONTAINER_NAME)\"\n"
