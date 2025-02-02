@@ -64,6 +64,3 @@ start-venv:
 
 remove-venv:
 	rm -rf $(VENV_FILES)
-
-Makefile:
-	m4 Makefile.m4 > Makefile
