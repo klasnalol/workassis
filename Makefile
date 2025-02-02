@@ -27,7 +27,7 @@ write_startup_info:
 
 $(JS_MINIFIED): $(JS_SOURCE)
 	@printf "\x1b[35m" && printf "[LOG]" && printf "\x1b[0m" && printf ' miniying js files: "' && printf "\x1b[34m" && printf '$(JS_SOURCE)' && printf "\x1b[0m" && echo '"'
-	@for i in static/scripts/source/*.js; do j="$${i##*/}" && npx minify $$i -o "static/scripts/minified/$${j%%.js}.min.js"; done
+	for i in static/scripts/source/*.js; do j="$${i##*/}" && npx uglifyjs $$i -o "static/scripts/minified/$${j%%.js}.min.js" --source-map ; done
 
 minify: $(JS_MINIFIED)
 
