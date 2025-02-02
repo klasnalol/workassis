@@ -1,6 +1,5 @@
 #!/usr/bin/env make
 
-
 IMAGE_NAME ?= worky
 IMAGE_VERSION ?= latest
 CONTAINER_NAME ?= worky
@@ -16,6 +15,8 @@ JS_MINIFIED = $(foreach name,$(basename $(notdir $(JS_SOURCE))), static/scripts/
 
 JS_PRETTYFY_SRC=$(JS_SOURCE)
 
+JS_PRETTIFY_FLAGS=-o "static/scripts/minified/$${j%%.js}.min.js" --source-map  
+
 VENV_FILES = include lib/ lib64 bin/ pyvenv.cfg
 
 all: build_run
@@ -27,7 +28,7 @@ write_startup_info:
 
 $(JS_MINIFIED): $(JS_SOURCE)
 	@printf "\x1b[35m" && printf "[LOG]" && printf "\x1b[0m" && printf ' miniying js files: "' && printf "\x1b[34m" && printf '$(JS_SOURCE)' && printf "\x1b[0m" && echo '"'
-	for i in static/scripts/source/*.js; do j="$${i##*/}" && npx uglifyjs $$i -o "static/scripts/minified/$${j%%.js}.min.js" --source-map ; done
+	@for i in static/scripts/source/*.js; do j="$${i##*/}" && npx uglifyjs $$i $(JS_PRETTIFY_FLAGS); done
 
 minify: $(JS_MINIFIED)
 
