@@ -1,4 +1,4 @@
-{ pkgs ? (import (fetchTarball https://channels.nixos.org/nixpkgs-unstable/nixexprs.tar.xz)) {} }:
+{ pkgs ? import <nixpkgs> {} }:
 let
     ollamaDependenciesPath = ./modules/ollama/dependencies.nix;
     ollamaDependencies = if builtins.pathExists ollamaDependenciesPath then (import ollamaDependenciesPath { inherit pkgs; }) else [];
