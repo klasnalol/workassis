@@ -1,6 +1,5 @@
 #!/usr/bin/env make
 
-
 IMAGE_NAME ?= worky
 IMAGE_VERSION ?= latest
 CONTAINER_NAME ?= worky
@@ -14,6 +13,10 @@ JS_SCRIPTS_DIR = static/scripts
 JS_SOURCE = $(wildcard $(JS_SCRIPTS_DIR)/source/*.js)
 JS_MINIFIED = $(foreach name,$(basename $(notdir $(JS_SOURCE))), static/scripts/minified/$(name).min.js)
 
+JS_PRETTYFY_SRC=$(JS_SOURCE)
+
+JS_PRETTIFY_FLAGS=-o "static/scripts/minified/$${j%%.js}.min.js" --source-map  
+
 VENV_FILES = include lib/ lib64 bin/ pyvenv.cfg
 
 all: build_run
@@ -25,10 +28,12 @@ write_startup_info:
 
 $(JS_MINIFIED): $(JS_SOURCE)
 	@printf "\x1b[35m" && printf "[LOG]" && printf "\x1b[0m" && printf ' miniying js files: "' && printf "\x1b[34m" && printf '$(JS_SOURCE)' && printf "\x1b[0m" && echo '"'
-	@for i in static/scripts/source/*.js; do j="$${i##*/}" && npx minify $$i -o "static/scripts/minified/$${j%%.js}.min.js"; done
+	@for i in static/scripts/source/*.js; do j="$${i##*/}" && npx uglifyjs $$i $(JS_PRETTIFY_FLAGS); done
 
 minify: $(JS_MINIFIED)
 
+prettify: $(JS_PRETTYFY_SRC)
+	for file in $(JS_PRETTYFY_SRC); do npx prettier $$file --write; done 
 
 stop_container:
 	@printf "\x1b[35m" && printf "[LOG] " && printf "\x1b[0m" && printf  "Trying to stop container: \"$(CONTAINER_NAME)\"\n"
@@ -60,6 +65,3 @@ start-venv:
 
 remove-venv:
 	rm -rf $(VENV_FILES)
-
-Makefile:
-	m4 Makefile.m4 > Makefile

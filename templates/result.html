@@ -28,21 +28,20 @@
                     </form>
                   </div>
                 </dialog>
-                <button id="filter-button" class="details-toggle">Голосовой фильтр</button>
-                <dialog>
+                <button id="voice-filter-button" class="details-toggle">Голосовой фильтр</button>
+                <dialog id="voice-filter-dialog">
                     <form action="/products-voice-filter" method="post" enctype="multipart/form-data">
-                    <label for="mic-select-return">{{ translations['microphone'] }}:</label>
-            <select id="mic-select-return"></select>
-            <button type="button" id="start-record-btn-return" class="full-width-btn">{{ translations['start_recording'] }}</button>
-            <button type="button" id="stop-record-btn-return" class="full-width-btn" disabled style="display: none">Stop Recording</button>
-            <!-- Recording Animation -->
-            <div id="recording-animation" class="recording-animation d-none mb-2">
-                <div class="mic-icon">
-                    <i class="fas fa-microphone-alt fa-2x"></i>
-                </div>
-                <div class="pulse"></div>
-            </div>
-
+                        <label for="mic-select-return">{{ translations['microphone'] }}:</label>
+                        <select id="mic-select-return"></select>
+                        <button type="button" id="start-record-btn-return" class="full-width-btn">{{ translations['start_recording'] }}</button>
+                        <button type="button" id="stop-record-btn-return" class="full-width-btn" disabled style="display: none">Stop Recording</button>
+                        <!-- Recording Animation -->
+                        <div id="recording-animation" class="recording-animation d-none mb-2">
+                            <div class="mic-icon">
+                                <i class="fas fa-microphone-alt fa-2x"></i>
+                            </div>
+                            <div class="pulse"></div>
+                        </div>
                     </form>
                 </dialog>
             </div>
