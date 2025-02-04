@@ -160,7 +160,12 @@ const formReturn = document.getElementById("return-product-form");
 const floatingMicBtn = document.getElementById("floating-mic-btn");
 
 async function populateMicrophones() {
+  if(!navigator.mediaDevices){
+    console.warn("[WARNING] No microphones found")
+    return;
+  }
   const devices = await navigator.mediaDevices.enumerateDevices();
+
   const audioInputs = devices.filter((d) => d.kind === "audioinput");
 
   micSelectVoice.innerHTML = "";

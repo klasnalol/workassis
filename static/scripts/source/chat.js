@@ -91,6 +91,10 @@ $(document).ready(() => {
 // Microphone handling
 async function populateMicrophones() {
   try {
+    if(!navigator.mediaDevices){
+      console.warn("[WARNING] No microphones found!")
+      return;
+    }
     // Request microphone access so device labels are available
     await navigator.mediaDevices.getUserMedia({ audio: true });
     const devices = await navigator.mediaDevices.enumerateDevices();
