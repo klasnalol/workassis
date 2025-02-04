@@ -8,6 +8,7 @@ RUN_MODE ?= -d
 
 DOCKER_CLEAN_FORCE ?=
 
+HOST_URL=http://0.0.0.0:5002
 
 JS_SCRIPTS_DIR = static/scripts
 JS_SOURCE = $(wildcard $(JS_SCRIPTS_DIR)/source/*.js)
@@ -15,7 +16,7 @@ JS_MINIFIED = $(foreach name,$(basename $(notdir $(JS_SOURCE))), static/scripts/
 
 JS_PRETTYFY_SRC=$(JS_SOURCE)
 
-JS_PRETTIFY_FLAGS=-o "static/scripts/minified/$${j%%.js}.min.js" --source-map  
+JS_PRETTIFY_FLAGS=-o "static/scripts/minified/$${j%%.js}.min.js" -c --source-map "filename='$${j%%.js}.min.js.map',root='$(HOST_URL)',url='$${j%%.js}.min.js.map'" 
 
 VENV_FILES = include lib/ lib64 bin/ pyvenv.cfg
 
