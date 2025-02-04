@@ -8,7 +8,7 @@ function checkIfNotNull(element, name, selector) {
 }
 
 function voiceFilterHook() {
-  const startBtnVoice = document.querySelector("#tart-record-btn-return");
+  const startBtnVoice = document.querySelector("#start-record-btn-return");
   startBtnVoice.addEventListener("click", async () => {
     recordedChunksVoice = [];
     const deviceId = micSelectVoice.value;
