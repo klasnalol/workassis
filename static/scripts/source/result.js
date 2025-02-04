@@ -64,8 +64,11 @@ function hookEventListeners() {
   const productDetailsToggles = document.querySelectorAll(".details-toggle");
   let productId = 0;
   for (const productDetailToggle of productDetailsToggles) {
+    productId = productDetailToggle.getAttribute("product-id");
+    if(productId === null ){
+      continue;
+    }
     productDetailToggle.addEventListener("click", (event) => {
-      productId = productDetailToggle.getAttribute("product-id");
       fetchMoreInfo(productId);
     });
 
@@ -99,7 +102,7 @@ async function fetchMoreInfo(productId) {
   const infoParagraphSelector = `#additional-info-${productId}`;
   const infoParagraph = document.getElementById(infoParagraphSelector);
 
-  checkIfNotNull(detailsDivSelector, "details div", detailsDivSelector);
+  checkIfNotNull(detailsDiv, "details div", detailsDivSelector);
   checkIfNotNull(infoParagraph, "info paragraph", infoParagraphSelector);
   if ((detailsDiv || dummyElement).style.display === "none") {
     try {
@@ -122,7 +125,7 @@ async function fetchMoreInfo(productId) {
       console.error("Error fetching more info:", error);
     }
   } else {
-    detailsDiv.style.display = "none";
+    (detailsDiv || dummyElement).style.display = "none";
   }
 }
 
