@@ -7,8 +7,17 @@ function checkIfNotNull(element, name, selector) {
   console.error(`Could not find a ${name} by selector '${selector}'`);
 }
 
+function safeSelector(selector, name = "element"){
+    const element = document.querySelector(selector);
+    checkIfNotNull(element, name, selector);
+    return element;
+}
+
+
 function voiceFilterHook() {
-  const startBtnVoice = document.querySelector("#start-record-btn-return");
+  const startBtnVoice = safeSelector("#start-record-btn-return");
+  const micSelectVoice = safeSelector("#mic-select-voice");
+
   startBtnVoice.addEventListener("click", async () => {
     recordedChunksVoice = [];
     const deviceId = micSelectVoice.value;
