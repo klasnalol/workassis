@@ -121,13 +121,16 @@ async function populateMicrophones() {
     );
   }
 }
+// A hack to bypass redefinition of [mediaRecorderVoice] and [recordedChunksVoice]
+const chatModule = {
+    mediaRecorderVoice: undefined,
+    recordedChunksVoice: []
+};
 
-let mediaRecorderVoice;
-let recordedChunksVoice = [];
 
 // Start recording voice
 $("#record-voice-btn").click(async () => {
-  recordedChunksVoice = [];
+  chatModule.recordedChunksVoice = [];
   const deviceId = $("#mic-select-chat").val();
 
   if (!deviceId) {
@@ -139,16 +142,16 @@ $("#record-voice-btn").click(async () => {
     const stream = await navigator.mediaDevices.getUserMedia({
       audio: { deviceId: { exact: deviceId } },
     });
-    mediaRecorderVoice = new MediaRecorder(stream);
+    chatModule.mediaRecorderVoice = new MediaRecorder(stream);
 
-    mediaRecorderVoice.ondataavailable = (event) => {
+    chatModule.mediaRecorderVoice.ondataavailable = (event) => {
       if (event.data.size > 0) {
-        recordedChunksVoice.push(event.data);
+        chatModule.recordedChunksVoice.push(event.data);
       }
     };
 
-    mediaRecorderVoice.onstop = () => {
-      const audioBlob = new Blob(recordedChunksVoice, { type: "audio/webm" });
+    chatModule.mediaRecorderVoice.onstop = () => {
+      const audioBlob = new Blob(chatModule.recordedChunksVoice, { type: "audio/webm" });
       const formData = new FormData();
       formData.append("audio_file", audioBlob, "voice_input.webm");
 
@@ -190,7 +193,7 @@ $("#record-voice-btn").click(async () => {
     };
 
     // Start recording
-    mediaRecorderVoice.start();
+    chatModule.mediaRecorderVoice.start();
     showRecordingAnimation();
 
     $("#record-voice-btn").prop("disabled", true);
@@ -198,8 +201,8 @@ $("#record-voice-btn").click(async () => {
 
     // Automatically stop after 5 seconds (optional)
     setTimeout(() => {
-      if (mediaRecorderVoice && mediaRecorderVoice.state !== "inactive") {
-        mediaRecorderVoice.stop();
+      if (chatModule.mediaRecorderVoice && mediaRecorderVoice.state !== "inactive") {
+        chatModule.mediaRecorderVoice.stop();
         hideRecordingAnimation();
         $("#record-voice-btn").prop("disabled", false);
         $("#stop-record-voice-btn").prop("disabled", true).addClass("d-none");
@@ -213,8 +216,8 @@ $("#record-voice-btn").click(async () => {
 
 // Stop recording manually
 $("#stop-record-voice-btn").click(() => {
-  if (mediaRecorderVoice && mediaRecorderVoice.state !== "inactive") {
-    mediaRecorderVoice.stop();
+  if (chatModule.mediaRecorderVoice && mediaRecorderVoice.state !== "inactive") {
+    chatModule.mediaRecorderVoice.stop();
     hideRecordingAnimation();
     $("#record-voice-btn").prop("disabled", false);
     $("#stop-record-voice-btn").prop("disabled", true).addClass("d-none");
@@ -238,3 +241,4 @@ $("#user-input").keypress((e) => {
     $("#send-text-btn").click();
   }
 });
+
