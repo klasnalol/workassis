@@ -13,8 +13,9 @@ class Config:
     host: str
     port: int | str
     debug: bool
+    server_debug_startup_params: dict
 
-    def __init_vars__(self, app_name, database, host, port, debug) -> None:
+    def __init_vars__(self, app_name, database, host, port, debug, server_debug_startup_params, **kwargs) -> None:
         self.__init_env_vars__()
         self.app = Flask(app_name)
         # Initialize Flask app
@@ -33,14 +34,19 @@ class Config:
         self.host = host
         self.port = port
         self.debug = debug
-
+    
+        self.server_debug_startup_params = server_debug_startup_params
     def __init_env_vars__(self):
         load_dotenv()
 
-    def __init__(self, app_name: str = "__main__", database_url: str = os.getenv("DATABASE_URL"), host='0.0.0.0', port=5002, debug=False) -> None:
-        self.__init_vars__(app_name, database_url, host, port, debug)
+    def __init__(self, app_name: str = "__main__", database_url: str = os.getenv("DATABASE_URL"), host='0.0.0.0', port=5002, debug=False, server_debug_startup_params={}) -> None:
+        self.__init_vars__(app_name, database_url, host, port, debug, server_debug_startup_params)
         logging.basicConfig(filename='app.log', level=logging.DEBUG)
         os.makedirs(self.app.config['UPLOAD_FOLDER'], exist_ok=True)
 
-    def app_start(self):
-        self.socketio.run(self.app, host=self.host, port=self.port, debug=self.debug)
+    def app_start(self, **kwargs):
+        startup_params = {"host": self.host, "port": self.port, "debug":self.debug}
+        if self.debug:
+            startup_params.update(self.server_debug_startup_params)
+        startup_params.update(kwargs)
+        self.socketio.run(self.app,  **startup_params)

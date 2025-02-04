@@ -27,7 +27,8 @@ config = Config(
         database_url="database1.db",
         host="0.0.0.0",
         port=5002,
-        debug=True
+        debug=True,
+        server_debug_startup_params = {'certfile': 'certs/cert.pem', 'keyfile': 'certs/key.pem', 'server_side': True} 
 )
 
 
