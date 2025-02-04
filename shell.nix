@@ -2,7 +2,7 @@
 let
     ollamaDependenciesPath = ./modules/ollama/dependencies.nix;
     ollamaDependencies = if builtins.pathExists ollamaDependenciesPath then (import ollamaDependenciesPath { inherit pkgs; }) else [];
-    devDependencies = with pkgs.buildPackages; [ python312Packages.python-lsp-server ffmpeg  gnum4 nodejs_22 ];
+    devDependencies = with pkgs.buildPackages; [ python312Packages.python-lsp-server ffmpeg  gnum4 nodejs_22 openssl ];
     pythonDependencies = with pkgs.buildPackages.python312Packages; [ sounddevice ];
 in
 pkgs.mkShell {

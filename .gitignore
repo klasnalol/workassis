@@ -36,3 +36,5 @@ static/scripts/minified/*
 # Allow all the js libraries
 !static/scripts/lib
 
+# Dev certificates
+certs/*
