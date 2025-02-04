@@ -17,7 +17,7 @@ const language = document.getElementById("language");
 });
 
 if(language === null){
-    console.error(`Could not get an element with id "language"`);
+    console.warn(`[WARNING] Could not get an element with id "language"`);
 }
 
 // Attach language to forms on submission
