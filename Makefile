@@ -57,7 +57,7 @@ build: write_startup_info docker_build
 
 build_run: docker_build | docker_run
 
-run:
+run: minify
 	source bin/activate && python app.py
 
 start-venv:
