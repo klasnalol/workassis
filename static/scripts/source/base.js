@@ -7,11 +7,18 @@ document.addEventListener("DOMContentLoaded", function () {
 });
 
 // Event listener to save selected language
-document.getElementById("language").addEventListener("change", function () {
+const dummy = document.createElement("template");
+const language = document.getElementById("language");
+
+(language || dummy).addEventListener("change", function () {
   const selectedLanguage = this.value;
   // Store the selected language in localStorage
   localStorage.setItem("selectedLanguage", selectedLanguage);
 });
+
+if(language === null){
+    console.error(`Could not get an element with id "language"`);
+}
 
 // Attach language to forms on submission
 function attachLanguageToForms() {
