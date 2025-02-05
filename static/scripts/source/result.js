@@ -92,6 +92,13 @@ function hookEventListeners() {
     (filterButton || dummyElement).addEventListener("click", (event) => {
       (filterDialog || dummyElement).showModal();
     });
+    // TODO: finish form implementation
+    const textFilterForm = safeSelector("#text-voice-filter-form", "form");
+    textFilterForm.addEventListener("submit", (event) => {
+        fetch(event.target.getAttribute("action"), {'body': ""})
+        event.preventDefault();
+    });
+
     // TODO: Implement voice filter
     const voiceFilterButtonSelector = "#voice-filter-button";
     const voiceFilterButton = document.querySelector(voiceFilterButtonSelector);
@@ -102,6 +109,7 @@ function hookEventListeners() {
         voiceFilterDialog.showModal();
     });
     voiceFilterHook();
+
   }
 }
 

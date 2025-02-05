@@ -30,7 +30,11 @@
                 </dialog>
                 <button id="voice-filter-button" class="details-toggle">Голосовой фильтр</button>
                 <dialog id="voice-filter-dialog">
-                    <form action="/products-voice-filter" method="post" enctype="multipart/form-data">
+                    <form action="/api/text-voice-filter" method="post" id="text-voice-filter-form">
+                        <input type="text" name="text-filter" id="text-filter-input" required>
+                        <input type="submit">
+                    </form>
+                    {# <form action="/products-voice-filter" method="post" enctype="multipart/form-data">
                         <label for="mic-select-return">{{ translations['microphone'] }}:</label>
                         <select id="mic-select-return"></select>
                         <button type="button" id="start-record-btn-return" class="full-width-btn">{{ translations['start_recording'] }}</button>
@@ -43,6 +47,34 @@
                             <div class="pulse"></div>
                         </div>
                     </form>
+                    #}
+                    {# 
+                    <section class="voice-query-fullwidth">
+                            <h2>{{ translations['search_voice'] }}</h2>
+                            <!-- Updated form for /voice_input -->
+                            <form id="voice-input-form" action="/voice_input" method="post" enctype="multipart/form-data" style="display: none">
+                                <label for="mic-select-voice">{{ translations['microphone'] }}:</label>
+                                <select id="mic-select-voice"></select>
+                                <button type="button" id="start-record-btn-voice" class="full-width-btn">{{ translations['start_recording'] }}</button>
+                                <button type="button" id="stop-record-btn-voice" class="full-width-btn" disabled>Stop Recording</button>
+                            </form>
+
+                            <!-- Updated form for /return_product -->
+                            <form id="return-product-form" action="/return_product" method="post" enctype="multipart/form-data">
+                                <label for="mic-select-return">{{ translations['microphone'] }}:</label>
+                                <select id="mic-select-return"></select>
+                                <button type="button" id="start-record-btn-return" class="full-width-btn">{{ translations['start_recording'] }}</button>
+                                <button type="button" id="stop-record-btn-return" class="full-width-btn" disabled style="display: none">Stop Recording</button>
+                                <!-- Recording Animation -->
+                                <div id="recording-animation" class="recording-animation d-none mb-2">
+                                    <div class="mic-icon">
+                                        <i class="fas fa-microphone-alt fa-2x"></i>
+                                    </div>
+                                    <div class="pulse"></div>
+                                </div>
+                            </form>
+                    </section>
+                    #}
                 </dialog>
             </div>
         </h5>
