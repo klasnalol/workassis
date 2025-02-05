@@ -38,3 +38,5 @@ static/scripts/minified/*
 
 # Dev certificates
 certs/*
+
+uploads/*temp_voice_input*.webm
