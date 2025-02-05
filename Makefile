@@ -30,7 +30,7 @@ write_startup_info:
 
 $(JS_MINIFIED): $(JS_SOURCE)
 	@printf "\x1b[35m" && printf "[LOG]" && printf "\x1b[0m" && printf ' miniying js files: "' && printf "\x1b[34m" && printf '$(JS_SOURCE)' && printf "\x1b[0m" && echo '"'
-	@for i in static/scripts/source/*.js; do j="$${i##*/}" && npx uglifyjs $$i $(JS_PRETTIFY_FLAGS); done
+	@for i in static/scripts/source/*.js; do (j="$${i##*/}" && npx uglifyjs $$i $(JS_PRETTIFY_FLAGS) &); done
 
 minify: $(JS_MINIFIED)
 
