@@ -88,9 +88,9 @@
                             <img src="{{ url_for('static', filename='uploads/' + product['image']) }}" alt="{{ product['name'] }}" style="max-width: 150px;">
                         {% endif %}
                     </div>
-                    <h4>{{ product['name'] }}</h4>
-                    <p>{{ translations['price'] }} ₸ {{ product['price'] }}</p>
-                    <p>{{ translations['category'] }}: {{ product['category'] }}</p>
+                    <h4 class="product-name">{{ product['name'] }}</h4>
+                    <p class="product-price-wrapper">{{ translations['price'] }} ₸ <span class="product-price-span">{{ product['price'] }}</span></p>
+                    <p class="product-category">{{ translations['category'] }}: <span class="product-category-span">{{ product['category'] }}</span></p>
                     <button class="details-toggle" product-id="{{ product['id'] }}" >{{ translations['more_info'] }}</button>
                     <div id="product-details-{{ product['id'] }}" class="product-details" style="display: none;">
                         <p id="additional-info-{{ product['id'] }}"></p>

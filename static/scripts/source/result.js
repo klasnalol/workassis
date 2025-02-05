@@ -1,5 +1,11 @@
 const dummyElement = document.createElement("dialog");
 
+dummyElement.removeAllChildren = function (){
+    for (const children of this.children) {
+        this.removeChild(children)
+    }
+}
+
 function checkIfNotNull(element, name, selector) {
   if (element !== null) {
     return;
@@ -93,10 +99,41 @@ function hookEventListeners() {
       (filterDialog || dummyElement).showModal();
     });
     // TODO: finish form implementation
+    /**
+     * @typedef {Object} ProductInfoObject
+     * @property {string} name
+     * @property {number} price
+     * @property {string} category
+     **/
+
     const textFilterForm = safeSelector("#text-voice-filter-form", "form");
+    const productsDiv = safeSelector("#products-container", "products div");
+
     textFilterForm.addEventListener("submit", (event) => {
-        fetch(event.target.getAttribute("action"), {'body': ""})
         event.preventDefault();
+        /** 
+         * @type {object}
+         * @param {string} query
+         * @param {Array<ProductInfoObject>} currentProducts
+         * */
+        const textFilterRequest = {
+            query: textFilterForm.querySelector("input#text-filter-input").value,
+            currentProducts: []
+        };
+
+        dummyElement.removeAllChildren();
+        /** @type {ProductInfoObject} */
+        let productInfo = {};
+        for (const product of (productsDiv || dummyElement).children){
+            productInfo = {
+                name: product.querySelector("h4").innerText, 
+                price: Number.parseFloat(product.querySelector('.product-price-span').innerText), 
+                category: product.querySelector(".product-category-span").innerText
+            };
+            console.log(JSON.stringify(productInfo))
+            textFilterRequest.currentProducts.push(productInfo)
+        }
+        fetch(event.target.getAttribute("action"), {body: JSON.stringify(textFilterRequest), method: "POST"})
     });
 
     // TODO: Implement voice filter
