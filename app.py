@@ -16,8 +16,10 @@ from src.base import Base
 
 from routes.robots import robots_bp
 from routes.search import search_bp
+
 from routes.api.products import products_bp
 from routes.api.products_voice_filter import products_voice_filter_bp
+from routes.api.text_voice_filter import text_voice_filter_bp
 
 from shared import base, get_conn
 
