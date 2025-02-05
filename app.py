@@ -19,7 +19,7 @@ from routes.search import search_bp
 from routes.api.products import products_bp
 from routes.api.products_voice_filter import products_voice_filter_bp
 
-from shared import config, base, get_conn
+from shared import base, get_conn
 
 
 config = Config(
@@ -28,7 +28,7 @@ config = Config(
         host="0.0.0.0",
         port=5002,
         debug=True,
-        server_debug_startup_params = {'certfile': 'certs/cert.pem', 'keyfile': 'certs/key.pem', 'server_side': True} 
+        server_debug_startup_params={'certfile': 'certs/cert.pem', 'keyfile': 'certs/key.pem', 'server_side': True}
 )
 
 
