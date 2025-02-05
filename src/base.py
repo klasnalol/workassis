@@ -11,6 +11,20 @@ class ProductSearchResult:
     products: dict
     selected_language: str
 
+
+class MessageWrapper:
+    messages: list[dict]
+
+    def __init__(self, messages: list[dict] = []):
+        self.messages = messages
+
+    def add_message(self, query):
+        self.messages.append({
+            'role': 'user',
+            'content': query
+        })
+
+
 class Base:
     database: str
 
@@ -115,4 +129,4 @@ class Base:
         ]
 
         # Render the results page
-        return ProductSearchResult(query=query, products=products_json, selected_language=selected_language) 
+        return ProductSearchResult(query=query, products=products_json, selected_language=selected_language)
