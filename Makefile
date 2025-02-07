@@ -23,6 +23,19 @@ VENV_FILES = include lib/ lib64 bin/ pyvenv.cfg
 
 all: build_run
 
+help:
+	@echo "Usage: make [target]"
+	@echo -e "[target] is what you want to make. It is one of:\n"
+	@echo -e " minify:\tbuilds minified JS files."
+	@echo -e " prettify:\tformats js source files."
+	@echo ""
+	@echo -e " certs:\tcreates certificates to use for HTTPS with flask"
+	@echo ""
+	@echo -e " build:\tBuilds docker image"
+	@echo -e " build_run:\tBuilds docker container and starts it"
+	@echo ""
+	@echo -e " run:\tEnters python venv and starts the app"
+
 write_startup_info: 
 	@printf "Image: " && printf "\x1b[34m" && echo $(IMAGE_NAME) && printf "\x1b[0m"
 	@printf "Container:" && printf "\x1b[34m" && echo $(CONTAINER_NAME) && printf "\x1b[0m"
