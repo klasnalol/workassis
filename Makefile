@@ -88,7 +88,7 @@ certs:
 	mkdir -p $(CERTS_DIR)
 	openssl req -x509 -newkey rsa:4096 -nodes -out $(CERTS_DIR)/cert.pem -keyout $(CERTS_DIR)/key.pem -days 365
 
-run: minify python-libs
+run: minify 
 	source bin/activate && python app.py
 
 $(VENV_FILES):
