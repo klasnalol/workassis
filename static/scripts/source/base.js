@@ -1,24 +1,30 @@
+const localState = {
+    dummy: document.createElement("template"),
+    language: document.getElementById("language")
+};
+
+
+
+if(localState.language === null){
+    console.warn(`[WARNING] Could not get an element with id "language"`);
+    localState.language = localState.dummy;
+}
+
 // On page load, set the dropdown to the saved language
 document.addEventListener("DOMContentLoaded", function () {
   const savedLanguage = localStorage.getItem("selectedLanguage");
   if (savedLanguage) {
-    document.getElementById("language").value = savedLanguage;
+    localState.language.value = savedLanguage;
   }
 });
 
 // Event listener to save selected language
-const dummy = document.createElement("template");
-const language = document.getElementById("language");
 
-(language || dummy).addEventListener("change", function () {
+(localState.language || localState.dummy).addEventListener("change", function () {
   const selectedLanguage = this.value;
   // Store the selected language in localStorage
   localStorage.setItem("selectedLanguage", selectedLanguage);
 });
-
-if(language === null){
-    console.warn(`[WARNING] Could not get an element with id "language"`);
-}
 
 // Attach language to forms on submission
 function attachLanguageToForms() {
