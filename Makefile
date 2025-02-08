@@ -43,10 +43,16 @@ write_startup_info:
 	@printf "Container:" && printf "\x1b[34m" && echo $(CONTAINER_NAME) && printf "\x1b[0m"
 	@printf "Ports:" && printf "\x1b[34m" && echo $(PORT_MAPPING) && printf "\x1b[0m"
 
+
+node_modules: 
+	npm install
+
+npm-libs: node_modules
+
 $(JS_MINIFIED_DIR):
 	mkdir $(JS_MINIFIED_DIR)
 
-$(JS_MINIFIED): $(JS_SOURCE) $(JS_MINIFIED_DIR)
+$(JS_MINIFIED): $(JS_SOURCE) $(JS_MINIFIED_DIR) npm-libs
 	@printf "\x1b[35m" && printf "[LOG]" && printf "\x1b[0m" && printf ' miniying js files: "' && printf "\x1b[34m" && printf '$(JS_SOURCE)' && printf "\x1b[0m" && echo '"'
 	@for i in static/scripts/source/*.js; do (j="$${i##*/}" && npx uglifyjs $$i $(JS_PRETTIFY_FLAGS) &); done
 
@@ -54,6 +60,7 @@ minify: $(JS_MINIFIED)
 
 prettify: $(JS_PRETTYFY_SRC)
 	for file in $(JS_PRETTYFY_SRC); do npx prettier $$file --write; done 
+
 
 stop_container:
 	@printf "\x1b[35m" && printf "[LOG] " && printf "\x1b[0m" && printf  "Trying to stop container: \"$(CONTAINER_NAME)\"\n"
@@ -77,17 +84,22 @@ build: write_startup_info docker_build
 
 build_run: docker_build | docker_run
 
-$(CERTS_DIR):
+certs: 
 	mkdir -p $(CERTS_DIR)
-
-certs: $(CERTS_DIR)
 	openssl req -x509 -newkey rsa:4096 -nodes -out $(CERTS_DIR)/cert.pem -keyout $(CERTS_DIR)/key.pem -days 365
 
-run: minify $(VENV_FILES)
+run: minify python-libs
 	source bin/activate && python app.py
 
-start-venv:
-	$(PYTHON) -m venv .
+$(VENV_FILES):
+	python3 -m venv .
+
+start-venv: $(VENV_FILES)
+
+python-libs: start-venv
+	. bin/activate && pip install -r requirements.txt
 
 remove-venv:
 	rm -rf $(VENV_FILES)
+
+setup: python-libs certs minify
