@@ -12,7 +12,9 @@ HOST_URL=http://0.0.0.0:5002
 
 JS_SCRIPTS_DIR = static/scripts
 JS_SOURCE = $(wildcard $(JS_SCRIPTS_DIR)/source/*.js)
-JS_MINIFIED = $(foreach name,$(basename $(notdir $(JS_SOURCE))), static/scripts/minified/$(name).min.js)
+
+JS_MINIFIED_DIR=static/scripts/minified
+JS_MINIFIED = $(foreach name,$(basename $(notdir $(JS_SOURCE))), $(JS_MINIFIED_DIR)/$(name).min.js)
 
 JS_PRETTYFY_SRC=$(JS_SOURCE)
 JS_PRETTIFY_FLAGS=-o "static/scripts/minified/$${j%%.js}.min.js" -c --source-map "filename='$${j%%.js}.min.js.map',root='/',url='$${j%%.js}.min.js.map'" 
@@ -41,7 +43,10 @@ write_startup_info:
 	@printf "Container:" && printf "\x1b[34m" && echo $(CONTAINER_NAME) && printf "\x1b[0m"
 	@printf "Ports:" && printf "\x1b[34m" && echo $(PORT_MAPPING) && printf "\x1b[0m"
 
-$(JS_MINIFIED): $(JS_SOURCE)
+$(JS_MINIFIED_DIR):
+	mkdir $(JS_MINIFIED_DIR)
+
+$(JS_MINIFIED): $(JS_SOURCE) $(JS_MINIFIED_DIR)
 	@printf "\x1b[35m" && printf "[LOG]" && printf "\x1b[0m" && printf ' miniying js files: "' && printf "\x1b[34m" && printf '$(JS_SOURCE)' && printf "\x1b[0m" && echo '"'
 	@for i in static/scripts/source/*.js; do (j="$${i##*/}" && npx uglifyjs $$i $(JS_PRETTIFY_FLAGS) &); done
 
@@ -72,11 +77,13 @@ build: write_startup_info docker_build
 
 build_run: docker_build | docker_run
 
-certs:
+$(CERTS_DIR):
 	mkdir -p $(CERTS_DIR)
+
+certs: $(CERTS_DIR)
 	openssl req -x509 -newkey rsa:4096 -nodes -out $(CERTS_DIR)/cert.pem -keyout $(CERTS_DIR)/key.pem -days 365
 
-run: minify
+run: minify $(VENV_FILES)
 	source bin/activate && python app.py
 
 start-venv:
